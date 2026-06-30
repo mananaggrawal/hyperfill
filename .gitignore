@@ -1,0 +1,37 @@
+# --- OS / Python ---
+.DS_Store
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.idea/
+.vscode/
+
+# ============================================================================
+# Your private content is kept OUT of git by default, so you never push your
+# letterhead, signature, company documents, or work-in-progress bids by accident.
+# Folder structure is preserved via README.md / .gitkeep files.
+# If you keep a PRIVATE repo and WANT your files versioned, delete the relevant
+# lines below.
+# ============================================================================
+
+# Assets: letterhead and (especially) the signature/stamp image
+assets/letterhead/*
+assets/signature-stamp/*
+
+# Submission documents and narrative/profile material you add
+company-knowledge/submission-documents/company-documents/*
+company-knowledge/submission-documents/experience-proofs/*
+company-knowledge/profile/*
+
+# Always keep the placeholders so the structure survives a clone
+!**/README.md
+!**/.gitkeep
+
+# Per-bid work (keep the template and the bids README)
+bids/*
+!bids/_template/
+!bids/README.md
