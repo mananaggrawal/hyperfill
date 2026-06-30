@@ -25,5 +25,5 @@
 ## Process
 
 Follow [`../../docs/workflow.md`](../../docs/workflow.md). Pull facts from
-[`../../company-knowledge/master-data.md`](../../company-knowledge/master-data.md) and build with
+[`../../company/company-info.json`](../../company/company-info.json) and build with
 the [`../../toolkit/`](../../toolkit/).

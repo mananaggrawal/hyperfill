@@ -2,17 +2,17 @@
 
 Reusable, config-driven Python for generating bid documents. **No absolute paths** live
 in these scripts — everything resolves relative to the repo root via `paths.py`, and your
-letterhead/signature are auto-detected from `assets/`, so the kit works wherever it's cloned.
+letterhead/signature are auto-detected from `company/`, so the kit works wherever it's cloned.
 
 ## Modules
 
 | Module | Purpose |
 |--------|---------|
-| `paths.py` | Repo-relative path resolver. Finds your letterhead (`assets/letterhead/*.docx`) and signature (`assets/signature-stamp/*.png`). |
-| `bidder_profile.py` | Single source of truth for your organisation's details. Fill it in. |
+| `paths.py` | Repo-relative path resolver. Finds your letterhead (`company/letterhead/*.docx`) and signature (`company/signature/*.png`). |
+| `bidder_profile.py` | Loads `company/company-info.json` and exposes your details to the toolkit. Fill the JSON via `rfpkit init`. |
 | `docx_builder.py` | Letterhead-based DOCX builder + helpers (`para`, `heading`, `table`, `tr`, `tc`, `sign_block`). |
 | `pdf_tools.py` | `to_pdf()` (DOCX→PDF via LibreOffice) and `merge()` (ordered PDF concatenation). |
-| `cli.py` | The `rfpkit` command (`check`, `new`, `list`, `build-pdf`). |
+| `cli.py` | The `rfpkit` command (`init`, `check`, `new`, `list`, `build-pdf`). |
 
 ## How a document gets built
 

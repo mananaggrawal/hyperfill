@@ -57,8 +57,8 @@ body += db.table([500,3000,2000], rows) + db.sign_block()
 db.build_docx(body, paths.bid_dir("<slug>") / "outputs/docx/Annexure5.docx")
 ```
 
-For the **response proposal** (narrative), draw from `company-knowledge/profile/` (and any
-external proposal library you linked in `company-knowledge/proposal-library.md`).
+For the **response proposal** (narrative), draw from `company/about/` (and any
+external proposal library you linked in `company/about/README.md`).
 
 ## Step 4 — Convert to PDF
 

@@ -15,8 +15,8 @@ your knowledge base  ──►  RFP (a task)  ──►  Claude follows the work
 (filled once)             bids/<slug>/                                        bids/<slug>/submission/
 ```
 
-- **`company-knowledge/`** — your reusable facts and documents (shared by every bid).
-- **`assets/`** — your letterhead + signature/stamp, used to generate documents.
+- **`company/`** — the one folder you fill in: your details (`company-info.json`),
+  letterhead, signature, documents, experience proofs, and narrative. Shared by every bid.
 - **`toolkit/`** — config-driven Python that builds DOCX, converts to PDF, and merges attachments.
 - **`bids/`** — one folder per RFP. `bids/_template/` is the skeleton.
 - **`docs/`** — workflow, structure, conventions, knowledge-base, and setup guides.
@@ -31,13 +31,15 @@ your knowledge base  ──►  RFP (a task)  ──►  Claude follows the work
    Also install **LibreOffice** (for DOCX→PDF).
 
 2. **Add your company** (one-time) — see [`docs/setup.md`](docs/setup.md):
-   - Fill [`toolkit/bidder_profile.py`](toolkit/bidder_profile.py) and
-     [`company-knowledge/master-data.md`](company-knowledge/master-data.md).
-   - Drop your **letterhead** `.docx` into `assets/letterhead/`.
-   - Drop your **signature/stamp** image into `assets/signature-stamp/`.
-   - Drop your **company documents** (registration, tax, financials, certs) into
-     `company-knowledge/submission-documents/`.
-   - Add narrative/profile docs (deck, business plan) to `company-knowledge/profile/`.
+   ```bash
+   rfpkit init        # guided wizard — fills company/company-info.json for you
+   ```
+   Then drop your files into the **`company/`** folder (each subfolder has a one-line README):
+   - **`company/letterhead/`** — your letterhead `.docx`
+   - **`company/signature/`** — your signature + stamp image
+   - **`company/documents/`** — registration, tax, financials, certifications
+   - **`company/experience/`** — client agreements / completion certificates
+   - **`company/about/`** — deck, business plan, technical write-ups
 
 3. **Verify**
    ```bash
@@ -57,7 +59,8 @@ your knowledge base  ──►  RFP (a task)  ──►  Claude follows the work
 
 | Command | Does |
 |---------|------|
-| `rfpkit check` | Verify setup (profile filled, letterhead/signature present, deps). |
+| `rfpkit init` | Guided setup — fills `company/company-info.json` for you. |
+| `rfpkit check` | Verify setup (details filled, letterhead/signature present, deps). |
 | `rfpkit new <slug>` | Create a new bid folder from the template. |
 | `rfpkit list` | List your knowledge base and bids. |
 | `rfpkit build-pdf <file.docx>` | Convert a DOCX to PDF. |

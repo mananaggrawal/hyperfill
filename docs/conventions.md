@@ -5,7 +5,7 @@ Rules that keep every bid consistent and submittable.
 ## Signing & stamping
 
 - The authorised signatory is defined in `bidder_profile.AUTHORISED_SIGNATORY`. Their
-  signature + company stamp is the image in `assets/signature-stamp/`.
+  signature + company stamp is the image in `company/signature/`.
 - Any generated document needing a signature uses `docx_builder.sign_block()`, which inserts
   the image and the signatory's name/designation from the profile.
 - If a bid-opening representative signs/carries certain documents, use
@@ -15,7 +15,7 @@ Rules that keep every bid consistent and submittable.
 
 ## Letterhead
 
-Generated documents are built on the `.docx` in `assets/letterhead/` (logo, header, footer).
+Generated documents are built on the `.docx` in `company/letterhead/` (logo, header, footer).
 The builder injects content before the section properties so the letterhead is preserved.
 
 ## Manual-action items (cannot be fully auto-generated)
@@ -35,7 +35,7 @@ Generate the **draft/format** so the human has something to print — never trea
 ## Single source of truth
 
 - Identity numbers, addresses, signatory, financials, escalation matrix live **once** in
-  `toolkit/bidder_profile.py` and `company-knowledge/master-data.md`. Keep them in sync.
+  `company/company-info.json` (read by `toolkit/bidder_profile.py`). Update there and regenerate.
 - Don't hard-code these into individual scripts. Import from `bidder_profile`.
 - Verify financial figures against the audited statements you attach before each submission.
 

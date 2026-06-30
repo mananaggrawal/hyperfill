@@ -1,0 +1,29 @@
+{
+  "company": {
+    "legal_name": "",
+    "short_name": "",
+    "registration_no": "",
+    "tax_id": "",
+    "vat_gst": "",
+    "incorporated_on": "",
+    "business_size": "",
+    "registered_office": "",
+    "website": ""
+  },
+  "authorised_signatory": {
+    "name": "",
+    "designation": "",
+    "phone": "",
+    "email": ""
+  },
+  "bid_opening_rep": {
+    "name": "",
+    "designation": "",
+    "id_number": "",
+    "phone": "",
+    "email": ""
+  },
+  "offices": [],
+  "escalation_matrix": [],
+  "financials": {}
+}

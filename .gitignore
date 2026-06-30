@@ -18,14 +18,17 @@ venv/
 # lines below.
 # ============================================================================
 
-# Assets: letterhead and (especially) the signature/stamp image
-assets/letterhead/*
-assets/signature-stamp/*
+# Your filled-in details (contains names, contacts) — uncomment to keep out of git:
+# company/company-info.json
 
-# Submission documents and narrative/profile material you add
-company-knowledge/submission-documents/company-documents/*
-company-knowledge/submission-documents/experience-proofs/*
-company-knowledge/profile/*
+# Letterhead and (especially) the signature/stamp image
+company/letterhead/*
+company/signature/*
+
+# Documents, experience proofs, and narrative material you add
+company/documents/*
+company/experience/*
+company/about/*
 
 # Always keep the placeholders so the structure survives a clone
 !**/README.md

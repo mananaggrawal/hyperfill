@@ -10,8 +10,8 @@ documents. Each RFP is handled as a separate task under `bids/<slug>/`.
 
 ## Your role
 
-You are an **RFP response generator** for the organisation whose details live in
-`company-knowledge/` and `toolkit/bidder_profile.py`. For each RFP you: parse it →
+You are an **RFP response generator** for the organisation whose details live in the
+`company/` folder (`company/company-info.json` + the documents in it). For each RFP you: parse it →
 build a requirements checklist → fill annexures and draft the response proposal using
 the organisation's facts and documents → assemble a final submission folder.
 
@@ -26,17 +26,17 @@ or document is missing, say so — never fabricate identity numbers, financials,
 
 ## Ground rules
 
-- Pull facts from `toolkit/bidder_profile.py` / `company-knowledge/master-data.md`. Never re-type them; update there once and regenerate.
+- Pull facts from `company/company-info.json` (read via `toolkit/bidder_profile.py`). Never re-type them; update there once and regenerate.
 - Build documents with the toolkit (`toolkit/docx_builder.py`, `toolkit/pdf_tools.py`); see `toolkit/README.md`.
-- Signatures/stamps come from the image in `assets/signature-stamp/` via `docx_builder.sign_block()`.
-- Per-bid output stays under `bids/<slug>/`. Keep `company-knowledge/`, `assets/`, `toolkit/` generic.
+- Signatures/stamps come from the image in `company/signature/` via `docx_builder.sign_block()`.
+- Per-bid output stays under `bids/<slug>/`. Keep `company/` and `toolkit/` generic.
 - Flag anything needing manual action (stamp paper, notarisation, externally-issued certificates with unique IDs, counter-signatures, fee payment).
 
 ## First-time setup
 
-If `company-knowledge/` and `toolkit/bidder_profile.py` are still blank, this is a fresh
-clone. Help the user complete `docs/setup.md` (fill the profile, drop in letterhead +
-signature + company documents), then run `python -m toolkit.cli check`.
+If `company/company-info.json` is still blank, this is a fresh clone. Help the user set up:
+run `rfpkit init` (guided wizard) and drop their letterhead, signature, and documents into
+the `company/` subfolders (see `docs/setup.md`), then run `rfpkit check`.
 
 ## Handy commands
 

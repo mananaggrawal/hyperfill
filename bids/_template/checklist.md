@@ -26,7 +26,7 @@
 
 | # | Item | Status | Notes |
 |---|------|--------|-------|
-| | Response proposal (narrative) | ⬜ | from company-knowledge/profile |
+| | Response proposal (narrative) | ⬜ | from company/about |
 | | Domain-specific technical evidence | ⬜ | |
 
 ## D. Formatting & packaging

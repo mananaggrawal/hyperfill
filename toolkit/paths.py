@@ -3,7 +3,8 @@ Central path resolver. Every path is resolved RELATIVE to the repo root (the
 folder containing this `toolkit/` directory), so the kit works wherever it's
 cloned. Do NOT hard-code absolute paths elsewhere — import from here.
 
-The letterhead and signature/stamp are discovered by scanning their folders, so
+Everything the user provides lives under a single `company/` folder. The
+letterhead and signature/stamp are discovered by scanning their subfolders, so
 you just drop YOUR files in and the toolkit finds them (no filenames to edit).
 """
 
@@ -11,20 +12,19 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
-# --- Reusable knowledge & assets ---
-KNOWLEDGE_DIR    = REPO_ROOT / "company-knowledge"
-PROFILE_DIR      = KNOWLEDGE_DIR / "profile"
-SUBMISSION_DOCS  = KNOWLEDGE_DIR / "submission-documents"
-COMPANY_DOCS_DIR = SUBMISSION_DOCS / "company-documents"
-EXPERIENCE_DIR   = SUBMISSION_DOCS / "experience-proofs"
+# --- The one folder the user fills in ---
+COMPANY_DIR    = REPO_ROOT / "company"
+COMPANY_INFO   = COMPANY_DIR / "company-info.json"
+LETTERHEAD_DIR = COMPANY_DIR / "letterhead"
+SIGN_STAMP_DIR = COMPANY_DIR / "signature"
+DOCUMENTS_DIR  = COMPANY_DIR / "documents"
+EXPERIENCE_DIR = COMPANY_DIR / "experience"
+ABOUT_DIR      = COMPANY_DIR / "about"
 
-ASSETS_DIR       = REPO_ROOT / "assets"
-LETTERHEAD_DIR   = ASSETS_DIR / "letterhead"
-SIGN_STAMP_DIR   = ASSETS_DIR / "signature-stamp"
-
-BIDS_DIR         = REPO_ROOT / "bids"
-BID_TEMPLATE     = BIDS_DIR / "_template"
-EXAMPLES_DIR     = REPO_ROOT / "examples"
+# --- Per-bid task work ---
+BIDS_DIR     = REPO_ROOT / "bids"
+BID_TEMPLATE = BIDS_DIR / "_template"
+EXAMPLES_DIR = REPO_ROOT / "examples"
 
 
 def _first(folder: Path, patterns):
@@ -36,7 +36,7 @@ def _first(folder: Path, patterns):
 
 
 def letterhead() -> Path:
-    """Your letterhead .docx (first one found in assets/letterhead/)."""
+    """Your letterhead .docx (first one found in company/letterhead/)."""
     p = _first(LETTERHEAD_DIR, ["*.docx"])
     if p is None:
         raise FileNotFoundError(
@@ -45,7 +45,7 @@ def letterhead() -> Path:
 
 
 def sign_stamp() -> Path:
-    """Your signature/stamp image (first found in assets/signature-stamp/)."""
+    """Your signature/stamp image (first found in company/signature/)."""
     p = _first(SIGN_STAMP_DIR, ["*.png", "*.jpg", "*.jpeg"])
     if p is None:
         raise FileNotFoundError(
@@ -58,7 +58,7 @@ def bid_dir(slug: str) -> Path:
 
 
 def company_doc(filename: str) -> Path:
-    return COMPANY_DOCS_DIR / filename
+    return DOCUMENTS_DIR / filename
 
 
 def experience_proof(filename: str) -> Path:

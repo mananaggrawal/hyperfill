@@ -1,71 +1,74 @@
 """
-SINGLE SOURCE OF TRUTH for your organisation's bidder details.
+Your organisation's bidder details — loaded from company/company-info.json.
 
-Fill this in once with YOUR company's information. Every annexure / proposal /
-declaration pulls facts from here instead of re-typing them, so when something
-changes you update it ONCE and regenerate. Keep this in sync with
-company-knowledge/master-data.md.
-
-Everything below ships blank on purpose — this is a framework, not a company.
+You don't edit this file. Fill in your details by running `rfpkit init` (a guided
+wizard) or by editing company/company-info.json directly. This module reads that
+JSON and exposes it as Python objects the rest of the toolkit uses, so when a fact
+changes you update it in ONE place and regenerate.
 """
 
-COMPANY = {
-    "legal_name":        "",   # e.g. "Acme Technologies Private Limited"
-    "short_name":        "",
-    "registration_no":   "",   # CIN / company number
-    "tax_id":            "",   # PAN / EIN / VAT — whatever applies in your country
-    "vat_gst":           "",   # GST / VAT / sales-tax registration
-    "secondary_tax_id":  "",   # TAN or other, optional
-    "incorporated_on":   "",   # e.g. "17 June 2022"
-    "msme_or_size":      "",   # business size / MSME / SME status, if relevant
-    "registered_office": "",
-    "website":           "",
+import json
+
+from . import paths
+
+_DEFAULT = {
+    "company": {
+        "legal_name": "", "short_name": "", "registration_no": "", "tax_id": "",
+        "vat_gst": "", "incorporated_on": "", "business_size": "",
+        "registered_office": "", "website": "",
+    },
+    "authorised_signatory": {"name": "", "designation": "", "phone": "", "email": ""},
+    "bid_opening_rep": {"name": "", "designation": "", "id_number": "", "phone": "", "email": ""},
+    "offices": [],
+    "escalation_matrix": [],
+    "financials": {},
 }
 
-# Person who signs the bid documents. The signature/stamp image goes in
-# assets/signature-stamp/ and is inserted automatically by docx_builder.sign_block().
-AUTHORISED_SIGNATORY = {
-    "name":        "",
-    "designation": "",
-    "phone":       "",
-    "email":       "",
-}
 
-# Person authorised to attend bid opening (if the RFP requires one).
-BID_OPENING_REP = {
-    "name":        "",
-    "designation": "",
-    "id_number":   "",
-    "phone":       "",
-    "email":       "",
-}
+def _load():
+    try:
+        with open(paths.COMPANY_INFO, encoding="utf-8") as f:
+            data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return dict(_DEFAULT)
+    # merge onto defaults so missing keys never crash callers
+    merged = json.loads(json.dumps(_DEFAULT))
+    for k, v in data.items():
+        if isinstance(v, dict) and isinstance(merged.get(k), dict):
+            merged[k].update(v)
+        else:
+            merged[k] = v
+    return merged
 
-# List your offices. Each: place, address, contact, phone, email, jurisdiction.
-OFFICES = [
-    # {"place": "", "address": "", "contact": "", "phone": "", "email": "", "jurisdiction": ""},
-]
 
-# Support / escalation matrix (L1 -> Ln), if the RFP asks for one.
-ESCALATION_MATRIX = [
-    # {"level": "L1", "name": "", "designation": "", "phone": "", "email": ""},
-]
+_data = _load()
 
-# Financials per year, e.g. {"FY2023-24": {"turnover": "", "net_worth": ""}}.
-# Always verify against the audited statements you attach.
-FINANCIALS = {
-    # "FY2023-24": {"turnover": "", "net_worth": ""},
-}
+COMPANY              = _data["company"]
+AUTHORISED_SIGNATORY = _data["authorised_signatory"]
+BID_OPENING_REP      = _data["bid_opening_rep"]
+OFFICES              = _data["offices"]
+ESCALATION_MATRIX    = _data["escalation_matrix"]
+FINANCIALS           = _data["financials"]
 
 
 def is_filled() -> bool:
     """True once the essentials are filled in (used by `rfpkit check`)."""
-    return bool(COMPANY["legal_name"] and AUTHORISED_SIGNATORY["name"])
+    return bool(COMPANY.get("legal_name") and AUTHORISED_SIGNATORY.get("name"))
+
+
+def reload():
+    """Re-read company-info.json (handy after the wizard writes it)."""
+    global _data, COMPANY, AUTHORISED_SIGNATORY, BID_OPENING_REP
+    global OFFICES, ESCALATION_MATRIX, FINANCIALS
+    _data = _load()
+    COMPANY = _data["company"]
+    AUTHORISED_SIGNATORY = _data["authorised_signatory"]
+    BID_OPENING_REP = _data["bid_opening_rep"]
+    OFFICES = _data["offices"]
+    ESCALATION_MATRIX = _data["escalation_matrix"]
+    FINANCIALS = _data["financials"]
+    return _data
 
 
 if __name__ == "__main__":
-    import json
-    print(json.dumps({
-        "COMPANY": COMPANY, "AUTHORISED_SIGNATORY": AUTHORISED_SIGNATORY,
-        "BID_OPENING_REP": BID_OPENING_REP, "OFFICES": OFFICES,
-        "ESCALATION_MATRIX": ESCALATION_MATRIX, "FINANCIALS": FINANCIALS,
-    }, indent=2))
+    print(json.dumps(_data, indent=2))
