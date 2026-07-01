@@ -15,17 +15,10 @@ dist/
 venv/
 
 # ── Company data (confidential — never pushed to git) ────────────────────────
-# All your certificates, financials, letterhead, signature, and narrative docs
-# live only on your local machine / Google Drive. Never in git.
-company/company-info.json
-company/about/*
-company/documents/*
-company/experience/*
-company/letterhead/*
-company/signature/*
-
-# Keep folder README stubs so structure survives a fresh clone
-!**/README.md
+# Everything inside company/ is private. Only README stubs are tracked.
+company/*
+!company/README.md
+!company/*/README.md
 !**/.gitkeep
 
 # ── Bid work (stays local / on Drive) ────────────────────────────────────────

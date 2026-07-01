@@ -12,20 +12,22 @@ outputs — all natively, using your own capabilities.
 ## What this tool does
 
 This kit helps a company respond to RFPs (Request for Proposals), tenders, and RFEs.
-Nine capabilities, each triggered by a slash command or a natural language request:
+Everything is conversational — the user just tells you what they need in plain English.
 
-| Command | What it does |
-|---|---|
-| `/new <slug>` | Creates a fresh folder for a new RFP |
-| `/parse <slug>` | Reads the RFP PDF and extracts it to structured text |
-| `/go-nogo <slug>` | Analyses whether the company should bid |
-| `/synopsis <slug>` | Produces a one-page summary of the RFP |
-| `/risks <slug>` | Flags risky clauses in the RFP |
-| `/search <slug> <query>` | Finds relevant sections in the RFP |
-| `/contradictions <slug>` | Finds conflicting requirements inside the RFP |
-| `/prebid <slug>` | Drafts pre-bid clarification questions |
-| `/fill <slug> <annexure>` | Fills a form/annexure using company data |
-| `/draft <slug> tech\|commercial` | Drafts the technical or commercial proposal |
+**What you can do:**
+
+- **Start a new bid** — set up a folder for a new RFP
+- **Parse an RFP** — read the PDF and extract it to structured text
+- **Go / No-Go** — analyse whether the company should bid
+- **Synopsis** — produce a one-page summary of the RFP
+- **Risks** — flag risky clauses in the RFP
+- **Search** — find relevant sections in the RFP
+- **Contradictions** — find conflicting requirements inside the RFP
+- **Pre-bid questions** — draft clarification questions to send the buyer
+- **Fill a form** — fill any annexure or form using company data
+- **Draft a proposal** — write the technical or commercial proposal
+
+Recognise any of these intents from natural language. "Should we bid on this?" = Go/No-Go. "What does the RFP say about payment terms?" = Search. "Write the proposal" = Draft.
 
 ---
 
@@ -102,13 +104,13 @@ When writing proposals, do not cite every project — pick the 3–5 most releva
 
 ## Document generation (internal — user never sees this)
 
-1. Read `company/letterhead/` to find the `.docx` template
-2. Read `company/signature/` to find the signature image
-3. Run `toolkit/docx_builder.py` to build the document on the letterhead
-4. Save DOCX to `bids/<slug>/outputs/docx/`
-5. Tell the user the file is ready and where to find it
-
-If `python-docx` is not installed, run `pip install python-docx --break-system-packages` first — silently.
+When generating a Word document:
+- Find the letterhead template (a `.docx` file anywhere in `company/`)
+- Find the signature image (a `.png` or `.jpg` anywhere in `company/`)
+- Use `toolkit/docx_builder.py` — it has helpers for headings, paragraphs, tables, and sign blocks
+- Install any missing dependencies silently before running
+- Save output to `bids/<slug>/outputs/docx/`
+- Tell the user the file is ready — nothing else
 
 ---
 
@@ -116,12 +118,12 @@ If `python-docx` is not installed, run `pip install python-docx --break-system-p
 
 | Situation | What to say |
 |---|---|
-| `company-info.json` has blank values | "Please open `company/company-info.json` and fill in the empty fields. See the README in the company/ folder for guidance." |
-| No letterhead uploaded | "Please add your company letterhead (.docx) to the `company/letterhead/` folder." |
-| No signature uploaded | "Please add your signature image (.png) to the `company/signature/` folder." |
-| RFP not yet parsed | "Please run `/parse <slug>` first — I need the RFP text before I can do this." |
-| A certificate not in documents/ | "Please upload `[document name]` to `company/documents/` and try again." |
-| A form field with no matching data | "I can't fill '[field]' — it's not in your company profile. Please add it to `company-info.json`." |
+| Company profile incomplete | "I'm missing [specific field]. Can you tell me [that one thing]?" |
+| No letterhead found | "Drop your company letterhead (a Word .docx file) into the company/ folder and let me know." |
+| No signature found | "Drop your signature image (.png or .jpg) into the company/ folder and let me know." |
+| RFP not yet parsed | "I haven't read the RFP yet — drop the PDF into the bid folder and tell me, I'll take it from there." |
+| A certificate missing | "I need your [certificate name] to proceed. Drop it into the company/ folder and let me know." |
+| A form field with no matching data | "I can't fill '[field]' — it's not in your company profile. What's the answer?" |
 
 ---
 
@@ -129,49 +131,24 @@ If `python-docx` is not installed, run `pip install python-docx --break-system-p
 
 When the user opens this folder in Claude Code, **immediately scan the folder silently** before saying anything.
 
-```python
-import json
-from pathlib import Path
+Check:
+- Is `company/company-info.json` filled? (does it have a legal_name?)
+- Are there any files inside `company/` — .docx, .png, .jpg, .pdf?
+- Are there any active bid folders inside `bids/` (excluding `_template`)?
+- For any active bids, does `parsed/rfp.md` exist?
 
-root = Path(".")
-info_path = root / "company" / "company-info.json"
-
-try:
-    info = json.loads(info_path.read_text())
-    company_name = info.get("company", {}).get("legal_name", "").strip()
-except:
-    company_name = ""
-
-# Check files anywhere inside company/ recursively
-company_dir = root / "company"
-has_letterhead = any(company_dir.rglob("*.docx"))
-has_signature  = any(company_dir.rglob("*.png")) or any(company_dir.rglob("*.jpg"))
-docs           = [f for f in company_dir.rglob("*")
-                  if f.is_file() and f.suffix == ".pdf"]
-has_about      = any(company_dir.rglob("about/*.md")) or \
-                 any(f for f in company_dir.rglob("*.md") if "README" not in f.name)
-has_experience = any(company_dir.rglob("experience/*.md"))
-
-bids = [d for d in (root / "bids").iterdir()
-        if d.is_dir() and d.name != "_template"]
-parsed_bids   = [b for b in bids if (b / "parsed" / "rfp.md").exists()]
-unparsed_bids = [b for b in bids if not (b / "parsed" / "rfp.md").exists()]
-
-profile_complete = bool(company_name)
-```
-
-Then decide which case applies and respond accordingly:
+Use whatever means you have — read files, list directories, check file contents. Do this silently. Then decide which case applies and respond:
 
 ---
 
 ### Case 1 — Brand new (no company name set)
 
-Greet and immediately direct them to the folder. Do not ask any questions yet.
+Greet and immediately direct them to the folder. Open the folder automatically so they can drag and drop files into it — run `open company/` on Mac or `start company/` on Windows. Do not ask any questions yet.
 
 ```
 Welcome! I'm your RFP assistant.
 
-To get started, drop all your company files into the `company/` folder —
+I've opened your company folder — drop all your files in there:
 your letterhead (Word .docx), signature image, certificates, financials, anything you have.
 
 Tell me when you're done.
