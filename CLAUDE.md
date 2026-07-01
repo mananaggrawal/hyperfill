@@ -200,16 +200,33 @@ Ready when you are. Got an RFP? Tell me the buyer's name and I'll get things set
 
 ### Case 3 — Active bids in progress
 
-List each bid with a one-line status, then ask which to work on:
+List each bid with status. Then, for the most active/urgent bid (or whichever the user is likely working on), show the full menu of what's possible right now — not just the next step. Always make it clear the user can pick anything, in any order.
 
 ```
 Welcome back. Here's where things stand:
 
-  • [Buyer name] — [status, e.g. "RFP read, Go/No-Go pending"]
-  • [Buyer name] — [status, e.g. "risks done, drafting in progress"]
+  • [Buyer name] — [status + any urgent deadline flag]
+  • [Buyer name] — [status]
 
-Which one are we working on, or is there a new RFP?
+For [most active bid], here's what I can do:
+
+  📋 Understand the RFP
+     • Go / No-Go — should you bid? Score across eligibility, fit, risk, and value
+     • Summarise the RFP in one page
+     • Flag risky or red-flag clauses
+     • Find contradictions or vague requirements
+     • Answer any question about what the RFP says
+
+  ✍️  Draft your response
+     • Draft pre-bid questions to send the buyer
+     • Fill any form or annexure with your company data
+     • Write the technical proposal
+     • Write the commercial proposal
+
+What would you like to do? Or is there a new RFP to add?
 ```
+
+If there's an urgent deadline (pre-bid query window, submission date) within the next 48 hours, flag it prominently above the menu.
 
 ---
 
@@ -258,47 +275,31 @@ you spend time on the response.
 
 ---
 
-## AFTER EACH TASK — always suggest what's next
+## AFTER EACH TASK — always show the full menu
 
-After every completed task, close with a short prompt so the user knows what they can do next.
+After every completed task, remind the user of everything still available —
+not just the single most obvious next step. Keep it short but complete.
+Use this template, ticking off what's already done:
 
-**After Go/No-Go:**
 ```
-[Recommendation: Bid / Bid with caveats / Don't bid]
+Done. Here's where things stand for [Buyer]:
 
-Want to go deeper? I can:
-  • Summarise the RFP in one page
-  • Flag all risky clauses
-  • Draft pre-bid questions to send the buyer
-```
+  ✓ [completed tasks]
+  ⬜ Go / No-Go
+  ⬜ One-page synopsis
+  ⬜ Risk and red-flag review
+  ⬜ Contradiction check
+  ⬜ Pre-bid questions
+  ⬜ Fill annexures / forms
+  ⬜ Technical proposal
+  ⬜ Commercial proposal
 
-**After Synopsis:**
-```
-Want me to flag the risks next, or draft pre-bid questions?
-```
-
-**After Risks:**
-```
-Want me to draft the pre-bid questions based on these, or are you ready to start the proposal?
+What would you like to do next?
 ```
 
-**After Pre-bid questions:**
-```
-Questions are ready in your outputs folder. Once you get the buyer's responses,
-come back and we'll start the proposal. Or I can begin drafting now if you'd prefer.
-```
-
-**After filling a form:**
-```
-[Filename] is ready in your outputs folder. Want me to fill the next annexure,
-or shall we move on to the proposal?
-```
-
-**After drafting the proposal:**
-```
-Draft saved to your outputs folder. Want me to fill the remaining annexures,
-or review anything before you submit?
-```
+Only show items that are genuinely available given where the bid is.
+For example, don't offer "fill annexures" if the RFP hasn't been parsed yet.
+If there's a deadline coming up (pre-bid query window, submission date), flag it here.
 
 ---
 
