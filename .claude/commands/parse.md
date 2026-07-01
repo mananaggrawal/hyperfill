@@ -1,46 +1,42 @@
-Parse an RFP PDF into clean, readable text.
+Read the RFP PDF and extract it into structured text.
 
 **Arguments:** `$ARGUMENTS` (the bid slug)
 
-## Steps
+## What you do
 
-1. The slug is: `$ARGUMENTS`. If missing, ask which bid to parse.
+You read the RFP PDF directly using your Read tool — no external conversion needed.
 
-2. Find the RFP file:
-   - Look in `bids/$ARGUMENTS/source/` for any PDF file.
-   - If no file found, tell the user: "Please upload the RFP PDF to bids/$ARGUMENTS/source/ and try again."
-   - If multiple files found, ask which one to parse.
+1. **Find the PDF.** Look in `bids/$ARGUMENTS/source/` for any PDF file.
+   - If none found: "Please upload the RFP PDF to `bids/$ARGUMENTS/source/` and then run this command again."
+   - If multiple files found: ask the user which one is the main RFP.
 
-3. Run the parser:
-```python
-import sys
-sys.path.insert(0, ".")
-from toolkit.pdf_tools import parse_pdf_to_markdown
-from toolkit.paths import bid_dir
+2. **Read the PDF.** Use your Read tool to open the PDF file. You can read PDFs natively.
 
-source_files = list((bid_dir("$ARGUMENTS") / "source").glob("*.pdf"))
-rfp_path = source_files[0]
-output_path = bid_dir("$ARGUMENTS") / "parsed" / "rfp.md"
-parse_pdf_to_markdown(rfp_path, output_path)
-print(f"Parsed to: {output_path}")
-```
+3. **Extract and structure the content.** As you read, organise the content into clean markdown:
+   - Preserve all section headings and numbering
+   - Keep tables as markdown tables
+   - Keep numbered lists and bullet points
+   - Note page breaks with `---`
+   - If a section is clearly an annexure/form, mark it with `## ANNEXURE: [name]`
 
-4. After parsing, read `bids/$ARGUMENTS/parsed/rfp.md` and:
-   - Report the approximate page count and word count
-   - List the main sections found (headings)
-   - Note anything that looks unusual (e.g. tables that may not have parsed cleanly)
+4. **Write to `bids/$ARGUMENTS/parsed/rfp.md`.** Create the file with this structure:
+   ```
+   # [RFP Title]
+   _Source: [filename] | Parsed: [today's date]_
 
-5. Update `bids/$ARGUMENTS/checklist.md` with a first pass of requirements:
-   - Eligibility criteria found
-   - Annexures / forms required
-   - Submission deadline
-   - EMD / bid fee amount
-   - Submission format (physical / online / email)
-   - Mark each as `Pending`
+   ---
 
-6. Tell the user:
-   "✓ RFP parsed successfully. Review bids/$ARGUMENTS/parsed/rfp.md to confirm it looks correct.
+   [Full structured content]
+   ```
 
-   Recommended next commands:
-   - /go-nogo $ARGUMENTS  — should we bid?
-   - /synopsis $ARGUMENTS — one-page summary"
+5. **After writing, report back:**
+   - Approximate length (pages / sections found)
+   - List of main sections identified
+   - List of annexures/forms found
+   - Submission deadline (if visible)
+   - Any pages that looked unclear or may need review
+
+6. **Build an initial checklist.** Update `bids/$ARGUMENTS/checklist.md` with every
+   requirement, annexure, deadline, and fee/EMD found. Mark all as `Pending`.
+
+Tell the user: "RFP parsed. Here's what I found: [summary]. Ready to run `/go-nogo $ARGUMENTS` or `/synopsis $ARGUMENTS` next."

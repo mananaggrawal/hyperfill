@@ -48,17 +48,25 @@ bids/<slug>/
 - All bid outputs go under `bids/<slug>/` — never pollute `company/` or `toolkit/`
 - One source of truth: update `company-info.json`, never retype facts inline
 
-## Recommended command sequence for a new bid
+## Key behaviours
+
+- **Read PDFs natively** using your Read tool. Never ask the user to convert files.
+- **Install Python deps silently** with `pip install python-docx --break-system-packages -q` before running toolkit scripts. Never surface this to the user.
+- **Be conversational.** Never show file paths, Python errors, or shell output to the user. Translate everything into plain English.
+- **Fill company-info.json conversationally** if it's blank — ask questions in chat, then write the JSON.
+
+## Command sequence for a new bid
 
 ```
-/new <slug>          → scaffold folder
-/parse <slug>        → extract RFP text
-/go-nogo <slug>      → decide whether to bid
-/synopsis <slug>     → brief for stakeholders
-/risks <slug>        → flag problematic clauses
-/contradictions <slug> → find internal conflicts
-/prebid <slug>       → draft clarification questions
-/fill <slug> <form>  → fill each annexure
-/draft <slug> tech   → technical proposal
-/draft <slug> commercial → commercial proposal
+/setup-drive              → one-time: detect Drive and create folder structure
+/new <slug>               → scaffold bid folder
+/parse <slug>             → read PDF and extract text
+/go-nogo <slug>           → should we bid?
+/synopsis <slug>          → one-page brief for stakeholders
+/risks <slug>             → flag risky clauses
+/contradictions <slug>    → find internal conflicts
+/prebid <slug>            → draft clarification questions
+/fill <slug> <annexure>   → fill each form
+/draft <slug> tech        → technical proposal
+/draft <slug> commercial  → commercial proposal
 ```

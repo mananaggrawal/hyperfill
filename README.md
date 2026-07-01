@@ -1,79 +1,78 @@
-# Claude RFP Kit
+# RFP Kit — for Claude Code
 
-A **Claude Code framework** for generating RFP / RFE / tender responses. Point Claude
-Code at this folder, fill it with **your** company's information once, and it will parse
-an RFP, fill the annexures, draft the response proposal, and assemble a submission-ready
-folder — following the rules in [`AGENTS.md`](AGENTS.md) / [`CLAUDE.md`](CLAUDE.md).
+Respond to RFPs, tenders, and RFEs using Claude Code. Drop in an RFP PDF, run a
+slash command, get back analysis, filled forms, and a draft proposal — all on your
+company letterhead, with your signature, using your real company data.
 
-The repo ships **empty** on purpose. There's no company baked in — you bring your own
-knowledge base.
+**Everything runs inside Claude Code. No other tools needed.**
+
+---
+
+## What it does
+
+| Command | Output |
+|---|---|
+| `/setup-drive` | Finds your Google Drive, creates all folders, walks you through company setup |
+| `/parse acme-bank-2026` | Reads the RFP PDF, extracts it to text, builds a requirements checklist |
+| `/go-nogo acme-bank-2026` | Scores eligibility, technical fit, risk — recommends Go / No-Go |
+| `/synopsis acme-bank-2026` | One-page brief: deadline, value, scope, evaluation method |
+| `/risks acme-bank-2026` | Flags penalty clauses, IP transfer, unlimited liability, unreasonable SLAs |
+| `/contradictions acme-bank-2026` | Finds where the RFP contradicts itself |
+| `/prebid acme-bank-2026` | Drafts formal clarification questions to submit to the buyer |
+| `/search acme-bank-2026 payment terms` | Finds any topic in the RFP instantly |
+| `/fill acme-bank-2026 annexure-3` | Fills the form with your company data, signs it, puts it on letterhead |
+| `/draft acme-bank-2026 tech` | Drafts the full technical or commercial proposal |
+
+Multiple RFPs can be in progress simultaneously — each lives in its own folder.
+
+---
+
+## How to get started
+
+**You need:** Claude Code + Google Drive for Desktop. Nothing else.
+
+1. Clone or download this repository
+2. Open Claude Code in this folder
+3. Type `/setup-drive`
+
+Claude Code will find your Google Drive, create all the folders, ask you a few questions
+about your company, and have you ready to work on your first RFP in about 5 minutes.
+
+Full setup guide: [`docs/setup.md`](docs/setup.md)
+
+---
 
 ## How it works
 
 ```
-your knowledge base  ──►  RFP (a task)  ──►  Claude follows the workflow  ──►  submission folder
-(filled once)             bids/<slug>/                                        bids/<slug>/submission/
+company/          ←  your details, filled once
+  company-info.json
+  about/          ←  what your company does
+  experience/     ←  past project write-ups
+  documents/      ←  certificates, financials
+  letterhead/     ←  your Word template
+  signature/      ←  your signature image
+
+bids/
+  acme-bank-2026/ ←  one folder per RFP
+    source/       ←  drop the RFP PDF here
+    parsed/       ←  Claude extracts text here
+    analysis/     ←  go-nogo, synopsis, risks, etc.
+    outputs/      ←  filled forms and proposals
+    submission/   ←  final package
 ```
 
-- **`company/`** — the one folder you fill in: your details (`company-info.json`),
-  letterhead, signature, documents, experience proofs, and narrative. Shared by every bid.
-- **`toolkit/`** — config-driven Python that builds DOCX, converts to PDF, and merges attachments.
-- **`bids/`** — one folder per RFP. `bids/_template/` is the skeleton.
-- **`docs/`** — workflow, structure, conventions, knowledge-base, and setup guides.
+Claude Code reads your company data once and reuses it across every bid.
+Your data never leaves your machine (or Google Drive if you choose to use it).
 
-## Quickstart
-
-1. **Get the code**
-   ```bash
-   git clone <your-repo-url> && cd claude-rfp-kit
-   pip install -e .            # installs the `rfpkit` command + pypdf
-   ```
-   Also install **LibreOffice** (for DOCX→PDF).
-
-2. **Add your company** (one-time) — see [`docs/setup.md`](docs/setup.md):
-   ```bash
-   rfpkit init        # guided wizard — fills company/company-info.json for you
-   ```
-   Then drop your files into the **`company/`** folder (each subfolder has a one-line README):
-   - **`company/letterhead/`** — your letterhead `.docx`
-   - **`company/signature/`** — your signature + stamp image
-   - **`company/documents/`** — registration, tax, financials, certifications
-   - **`company/experience/`** — client agreements / completion certificates
-   - **`company/about/`** — deck, business plan, technical write-ups
-
-3. **Verify**
-   ```bash
-   rfpkit check        # or: python -m toolkit.cli check
-   ```
-
-4. **Run a bid** — point Claude Code at the folder and give it the RFP:
-   ```bash
-   rfpkit new acme-bank-rfp-2026     # scaffolds bids/acme-bank-rfp-2026/
-   # put the RFP in bids/acme-bank-rfp-2026/source/, then in Claude Code:
-   #   "Process the RFP in bids/acme-bank-rfp-2026 following AGENTS.md"
-   ```
-   Claude reads `CLAUDE.md`/`AGENTS.md` and runs the workflow: parse → checklist →
-   fill annexures → draft proposal → assemble `submission/`.
-
-## CLI
-
-| Command | Does |
-|---------|------|
-| `rfpkit init` | Guided setup — fills `company/company-info.json` for you. |
-| `rfpkit check` | Verify setup (details filled, letterhead/signature present, deps). |
-| `rfpkit new <slug>` | Create a new bid folder from the template. |
-| `rfpkit list` | List your knowledge base and bids. |
-| `rfpkit build-pdf <file.docx>` | Convert a DOCX to PDF. |
-
-(All also available as `python -m toolkit.cli <command>` without installing.)
+---
 
 ## Privacy
 
-This framework contains **no company data**. When you fill it with yours, your private
-documents stay on your machine. The default [`.gitignore`](.gitignore) keeps your
-letterhead, signature image, and submission documents **out of git** so you don't push
-them by accident — adjust it if you intend to keep them in your own private repo.
+This repository contains no company data. Your certificates, financials, letterhead,
+and bid documents are excluded from git by default — they only exist on your local
+machine or Google Drive.
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE).
+MIT — see [LICENSE](LICENSE).

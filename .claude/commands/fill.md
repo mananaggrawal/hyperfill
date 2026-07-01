@@ -1,62 +1,53 @@
-Fill a form or annexure from the RFP using company data.
+Fill a form or annexure from the RFP using company data, on company letterhead with signature.
 
 **Arguments:** `$ARGUMENTS` (format: `<slug> <annexure name or number>`)
-Example: `/fill acme-bank-rfp-2026 annexure-3` or `/fill acme-bank-rfp-2026 "Company Profile Form"`
 
-## Steps
+## What you do
 
-1. Parse the arguments:
+1. **Parse the arguments:**
    - First word = slug
-   - Remaining = annexure identifier
-   - If annexure not specified, list all annexures found in `bids/<slug>/parsed/rfp.md` and ask which to fill.
+   - Rest = annexure identifier
+   - If no annexure given: read `bids/<slug>/parsed/rfp.md`, list all annexures found, and ask which to fill.
 
-2. Read `bids/<slug>/parsed/rfp.md` and find the specified annexure/form.
-   - Extract every field, table, and instruction from it.
-   - Note any instructions about format, signatures, stamps, or attachments.
+2. **Read the annexure** from `bids/<slug>/parsed/rfp.md`. Extract every field, table row, instruction, and note about required attachments or signatures.
 
-3. Read company data:
-   - `company/company-info.json`
-   - `company/about/` (for narrative fields)
-   - `company/experience/` (for project/reference tables)
-   - `company/documents/` (to know what attachments are available)
+3. **Read company data:**
+   - `company/company-info.json` — identity, registration, financials, signatory
+   - `company/about/*.md` — narrative fields
+   - `company/experience/*.md` — if the form has a project/reference table
+   - List files in `company/documents/` — to know what attachments exist
 
-4. Map each field to company data. For every field:
-   - If data is available: fill it in
-   - If data is missing: write `[MISSING — please add to company-info.json: <field name>]`
-   - If field requires a document attachment: note `[ATTACH: <document name from company/documents/>]`
+4. **Map every field** to company data:
+   - Data available → fill it
+   - Data missing → write `[MISSING — add to company-info.json: <field name>]`
+   - Needs an attachment → note `[ATTACH: <document from company/documents/>]`
+   - Needs stamp paper / notarisation → mark `⚠ MANUAL ACTION REQUIRED`
 
-5. Generate the filled Word document using the toolkit:
+5. **Generate the Word document** using the toolkit:
 
 ```python
-import sys
+import sys, subprocess
+# Ensure dependency
+subprocess.run(["pip", "install", "python-docx", "--break-system-packages", "-q"], capture_output=True)
+
 sys.path.insert(0, ".")
 from toolkit import docx_builder as db, bidder_profile as bp, paths
 
 profile = bp.load_profile()
 bid = paths.bid_dir("<slug>")
 
-# Build the document content based on the form structure found in the RFP
-# Use db.heading(), db.paragraph(), db.table(), db.sign_block()
-# Pull values from profile.* — never hardcode them
-
-body = db.heading("[Annexure Title]")
-# ... form content ...
-body += db.sign_block(profile)
+body = db.heading("[Annexure Title from RFP]")
+# Build each field/table based on what the RFP form requires
+# Use profile.legal_name, profile.registration_no, profile.signatory_name, etc.
+# For tables: db.table([col_widths], [db.tr(db.tc(...), ...), ...])
+body += db.sign_block()
 
 db.build_docx(body, bid / "outputs/docx/[AnnexureName].docx")
 ```
 
-6. List any manual actions needed:
-```
-⚠ MANUAL ACTION REQUIRED:
-- [Field X] requires a notarised declaration — this is a draft only
-- [Field Y] requires the CA's signature with UDIN — send the format to your CA
-- [Document Z] is not in company/documents/ — please upload it
-```
-
-7. Tell the user:
-   "✓ [Annexure name] filled and saved to bids/<slug>/outputs/docx/[filename].docx
+6. **Tell the user:**
+   "Done. I've filled [Annexure name] and saved it to `bids/<slug>/outputs/docx/[filename].docx`.
 
    Fields filled: [n]
-   Fields missing: [n] — see MISSING markers in the document
-   Manual actions: [n] — listed above"
+   Fields I couldn't fill: [list them — user needs to add to company-info.json]
+   ⚠ Manual actions needed: [list any stamp paper / CA certificate / wet signature items]"

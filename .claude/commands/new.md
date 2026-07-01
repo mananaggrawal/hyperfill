@@ -2,52 +2,51 @@ Create a new bid folder for an RFP.
 
 **Arguments:** `$ARGUMENTS` (the bid slug, e.g. `acme-bank-rfp-2026`)
 
-## Steps
+## What you do
 
-1. The slug is: `$ARGUMENTS`
-   - If no slug was provided, ask: "What would you like to name this bid? Use lowercase with hyphens, e.g. `acme-bank-rfp-2026`."
-   - A good slug is: buyer name + type + year, all lowercase, hyphens only.
+1. **Get the slug.** It is: `$ARGUMENTS`
+   - If blank, ask: "What would you like to name this bid? I'll use it as a folder name — something like `acme-bank-2026` works well."
+   - Good format: buyer name + year, lowercase, hyphens only. Keep it short.
 
-2. Check that `bids/$ARGUMENTS/` does not already exist. If it does, say "A bid folder for '$ARGUMENTS' already exists."
+2. **Check it doesn't already exist.** If `bids/$ARGUMENTS/` exists, say: "A folder for '$ARGUMENTS' already exists. Want to continue working in it, or use a different name?"
 
-3. Create this folder structure under `bids/$ARGUMENTS/`:
-   - `source/` — user will drop the RFP PDF here
-   - `parsed/` — /parse will populate this
-   - `analysis/` — analysis commands populate this
-   - `outputs/docx/` — generated Word documents
-   - `outputs/pdf/` — generated PDFs
-   - `submission/` — final package
+3. **Create the folder structure:**
+   ```
+   bids/$ARGUMENTS/
+   ├── source/       ← user will upload RFP here
+   ├── parsed/       ← /parse will create rfp.md here
+   ├── analysis/     ← analysis outputs go here
+   ├── outputs/
+   │   ├── docx/     ← generated Word documents
+   │   └── pdf/      ← PDF versions
+   └── submission/   ← final package
+   ```
 
-4. Write `bids/$ARGUMENTS/README.md`:
+4. **Write `bids/$ARGUMENTS/README.md`:**
+   ```markdown
+   # Bid: $ARGUMENTS
 
-```
-# Bid: $ARGUMENTS
+   | Field | Value |
+   |---|---|
+   | Buyer / Issuer | _(fill in)_ |
+   | Reference number | _(fill in)_ |
+   | Submission deadline | _(fill in)_ |
+   | EMD / Bid fee | _(fill in)_ |
+   | Status | In progress |
+   ```
 
-| Field | Value |
-|---|---|
-| Buyer / Issuer | _(fill in)_ |
-| Reference number | _(fill in)_ |
-| Submission deadline | _(fill in)_ |
-| EMD / Bid fee | _(fill in)_ |
-| Status | In progress |
+5. **Write `bids/$ARGUMENTS/checklist.md`:**
+   ```markdown
+   # Checklist — $ARGUMENTS
 
-## Notes
-_(Add notes here)_
-```
+   Run `/parse $ARGUMENTS` to populate this list automatically.
 
-5. Write `bids/$ARGUMENTS/checklist.md`:
+   | # | Item | Status | Notes |
+   |---|---|---|---|
+   ```
 
-```
-# Requirements Checklist — $ARGUMENTS
+6. **Confirm to the user:**
+   "Done! Folder `bids/$ARGUMENTS/` is ready.
 
-Run /parse then /synopsis to populate this checklist.
-
-| # | Requirement | Status | Notes |
-|---|---|---|---|
-```
-
-6. Confirm to the user:
-   "✓ Bid folder created at bids/$ARGUMENTS/.
-
-   Next step: Upload the RFP PDF into bids/$ARGUMENTS/source/, then run:
-   /parse $ARGUMENTS"
+   **Next:** Upload the RFP PDF into `bids/$ARGUMENTS/source/`, then come back and run:
+   `/parse $ARGUMENTS`"

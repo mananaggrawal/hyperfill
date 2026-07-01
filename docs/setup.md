@@ -1,93 +1,90 @@
 # Setup Guide
 
-Follow these steps once. After that, every RFP you work on reuses what you set up here.
+Everything is done through Claude Code. You do not need to install packages,
+run scripts, or use any other tool.
 
 ---
 
-## Part A — Google Drive setup (for teams)
+## What you need
 
-> Skip to Part B if you're working solo on your own machine.
+1. **Claude Code** — installed on your computer ([download here](https://claude.ai/download))
+2. **Google Drive for Desktop** — installed and signed in ([download here](https://www.google.com/drive/download/))
 
-1. **Install Google Drive for Desktop** on every team member's computer.
-   Download from: https://www.google.com/drive/download/
-
-2. **Create a folder in Google Drive** called `RFP-Kit`.
-
-3. **Copy this entire repository** into that Google Drive folder.
-   (Drag and drop the folder contents, or use the Drive web interface to upload.)
-
-4. **Each team member:** Open Google Drive for Desktop → find `RFP-Kit` → click the
-   sync icon to make it available offline on your computer.
-
-5. Your local path will be something like:
-   - Mac: `~/Google Drive/My Drive/RFP-Kit/`
-   - Windows: `G:\My Drive\RFP-Kit\`
-
-   Open Claude Code by navigating to this path in your terminal and running `claude`.
+That's it.
 
 ---
 
-## Part B — Company setup (do this once)
+## Step 1 — Get this repository
 
-### Step 1 — Install dependencies
+**Option A (recommended for teams):** Your admin clones or downloads this repository once,
+then the `/setup-drive` command (Step 2) copies everything to Google Drive for the whole team.
 
-Double-click `setup.sh` (Mac) or run in terminal:
-```
-bash setup.sh
-```
-
-This installs the required Python packages automatically.
-
-Also install **LibreOffice** for converting Word documents to PDF:
-- Mac: https://www.libreoffice.org/download/libreoffice/
-- Windows: https://www.libreoffice.org/download/libreoffice/
-
-### Step 2 — Fill in your company information
-
-Open `company/company-info.json` in any text editor (TextEdit, Notepad, VS Code).
-Replace every empty `""` with your company's real details.
-
-Fields to fill:
-- Company legal name, registration number, GST number
-- Authorised signatory (the person who signs bid documents)
-- Office address(es)
-- Last 3 years of financials (turnover + net worth)
-
-Or run the guided wizard instead:
-```
-python -m toolkit.cli init
-```
-
-### Step 3 — Upload your files
-
-Read the README in each folder for instructions on what to upload:
-
-| Folder | What to upload |
-|---|---|
-| `company/letterhead/` | Your Word letterhead template (`.docx`) |
-| `company/signature/` | Authorised signatory's signature image (`.png`) |
-| `company/documents/` | Certificates, financials, registration docs (PDFs) |
-| `company/experience/` | Past project write-ups (one `.md` file per project) |
-| `company/about/` | Company capability descriptions (`.md` files) |
-
-### Step 4 — Verify
-
-```
-python -m toolkit.cli check
-```
-
-Or open Claude Code and say: **"Check my setup."**
-
-Fix any items flagged as missing before starting your first bid.
+**Option B:** Download the ZIP from GitHub and unzip it anywhere on your computer.
 
 ---
 
-## Part C — Starting your first bid
+## Step 2 — Open Claude Code and run /setup-drive
 
-1. Get the RFP PDF from the buyer
-2. Open Claude Code in the RFP-Kit folder
-3. Say: **"Start a new bid for [buyer name]"** or run `/new acme-bank-rfp-2026`
-4. Upload the RFP PDF to the folder Claude tells you
-5. Run `/parse acme-bank-rfp-2026` and follow the sequence from there
+1. Open Claude Code
+2. Open this folder (File → Open Folder → select the `rfp-kit` folder)
+3. Type:
+   ```
+   /setup-drive
+   ```
 
-See `docs/workflow.md` for the full command sequence.
+Claude Code will:
+- Find your Google Drive folder automatically
+- Create the complete `RFP-Kit` folder structure on Drive
+- Ask you a few questions about your company and fill in your profile
+- Tell you exactly what files to upload and where
+
+This takes about 5 minutes and only needs to be done once.
+
+---
+
+## Step 3 — Upload your company files
+
+After `/setup-drive`, Claude will tell you which files to upload.
+The main ones are:
+
+| What | Where to upload | Format |
+|---|---|---|
+| Company letterhead | `company/letterhead/` | Word `.docx` |
+| Authorised signatory's signature | `company/signature/` | Image `.png` |
+| Incorporation / registration certificate | `company/documents/` | PDF |
+| GST certificate | `company/documents/` | PDF |
+| Audited financials (last 3 years) | `company/documents/` | PDF per year |
+| Any other certificates | `company/documents/` | PDF |
+| Past project write-ups | `company/experience/` | One `.md` per project |
+| Company capability descriptions | `company/about/` | `.md` files |
+
+Open the `README.md` inside each folder for detailed instructions.
+
+---
+
+## Step 4 — For team members
+
+Once the admin has run `/setup-drive`:
+
+1. Install Google Drive for Desktop and sign in with the company account
+2. The `RFP-Kit` folder will sync automatically to their computer
+3. Open Claude Code → Open Folder → select `RFP-Kit` from their local Drive mount
+4. Start working on bids
+
+No setup needed for team members — just open and go.
+
+---
+
+## Starting your first bid
+
+Once setup is done, the full workflow is in `docs/workflow.md`.
+The short version:
+
+```
+/new acme-bank-2026         ← create the bid folder
+[upload RFP PDF to source/]
+/parse acme-bank-2026       ← Claude reads and extracts the RFP
+/go-nogo acme-bank-2026     ← should we bid?
+/synopsis acme-bank-2026    ← one-page brief
+...
+```
