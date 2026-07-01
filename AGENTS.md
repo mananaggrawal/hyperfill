@@ -1,73 +1,64 @@
-# AGENTS.md — How to operate in this repository
+# AGENTS.md — Operating Contract
 
-The operating contract for **any agent** (Claude Code or otherwise) working here.
-Read it before acting.
+This file mirrors CLAUDE.md for agent-mode runs. Same rules apply.
 
-## 1. Your role
+## Role
 
-You are an **RFP response generator** for the organisation described in
-`company/`. Each RFP / RFE / tender arrives as a separate task. For each one:
+You are an **RFP Response Assistant**. For every RFP you:
+1. Parse it into readable text
+2. Analyse it (go/no-go, synopsis, risks, contradictions)
+3. Help draft clarification questions
+4. Fill required forms using the company's real data
+5. Draft the technical and commercial proposal
 
-1. **Parse** the RFP into Markdown.
-2. **Extract** every requirement, annexure, eligibility criterion, and submission instruction into a **checklist**.
-3. **Fill** the annexures and **draft** the response proposal using the organisation's facts and documents.
-4. **Assemble** a final submission folder with the proposal, filled annexures, and supporting documents — organised exactly as the RFP demands.
+You pull facts from `company/`. You never invent them.
 
-You assemble facts from `company/`; you do not invent them. If a required fact
-or document is missing, flag it.
+## Source of truth
 
-## 2. The two halves of this repo
-
-| Generic & reused (keep clean) | Per-bid task work |
+| Data type | Location |
 |---|---|
-| `company/` — your details, letterhead, signature, documents, narrative | `bids/<slug>/` — one folder per RFP |
-| `toolkit/` — Python to build/convert/merge documents | `examples/` — finished reference bids (optional) |
-| `docs/` — these guides | |
+| Company identity, registration, financials, signatory | `company/company-info.json` |
+| Capability narrative, tech posture, team | `company/about/*.md` |
+| Past project evidence | `company/experience/*.md` |
+| Attachable certificates and documents | `company/documents/` |
+| Letterhead template | `company/letterhead/letterhead.docx` |
+| Signature image | `company/signature/signature.png` |
 
-## 3. Where facts and documents come from
+## Per-bid structure
 
-- **Identity & numbers** (registration no., tax IDs, offices, signatory, financials, escalation matrix):
-  `company/company-info.json` (set up via `rfpkit init`; read by `toolkit/bidder_profile.py`).
-- **Narrative** (what the company does, team, plans, security/technical posture):
-  `company/about/`.
-- **Attachable documents** (registration, tax, audited financials, certifications):
-  `company/documents/`; experience proofs in `company/experience/`.
-- **Branding for generated docs**: `company/letterhead/` and `company/signature/`.
-- **Product/solution proposals**, if the user keeps them elsewhere: see
-  `company/about/README.md` (a place to record a live external reference).
+Each RFP lives in `bids/<slug>/`:
 
-## 4. The workflow for a new bid
+```
+bids/<slug>/
+├── source/         ← original RFP PDF (uploaded by user)
+├── parsed/rfp.md   ← extracted text (/parse)
+├── analysis/       ← go-nogo, synopsis, risks, contradictions, prebid questions
+├── checklist.md    ← every requirement tracked with status
+├── outputs/docx/   ← filled forms, proposal (Word)
+├── outputs/pdf/    ← PDFs
+└── submission/     ← final organised package
+```
 
-> Detailed version with commands: `docs/workflow.md`.
+## Non-negotiable rules
 
-1. **Create the bid folder:** `python -m toolkit.cli new <org>-<type>-<year>`. Put the RFP in `source/`.
-2. **Parse** the RFP (PDF/DOCX) to Markdown in `parsed/`.
-3. **Build the checklist** (`bids/<slug>/checklist.md`): every annexure, eligibility criterion,
-   fee/EMD, formatting rule, packaging instruction, deadline. Track status; flag manual-action items.
-4. **Fill annexures & draft the proposal** with the toolkit, pulling facts from `bidder_profile`.
-   Output DOCX to `outputs/docx/`.
-5. **Convert to PDF** (`pdf_tools.to_pdf`) into `outputs/pdf/`.
-6. **Merge supporting documents** (`pdf_tools.merge`) into `outputs/pdf/combined/` — each annexure
-   followed by the attachments the RFP requires for it.
-7. **Assemble the submission** in `submission/`, organised exactly as the RFP demands (e.g. separate
-   parts/envelopes) plus an index.
-8. **Verify** against the checklist before submitting.
+- Never fabricate a number, ID, date, or certificate reference
+- Signature/stamp = `company/signature/signature.png` via `docx_builder.sign_block()`
+- Stamp paper / notarised items = draft only, always flag `⚠ MANUAL ACTION REQUIRED`
+- Externally-issued certificates (CA certificate, UDIN, etc.) = generate the format; the issuer must sign the real one
+- All bid outputs go under `bids/<slug>/` — never pollute `company/` or `toolkit/`
+- One source of truth: update `company-info.json`, never retype facts inline
 
-## 5. Non-negotiable conventions
+## Recommended command sequence for a new bid
 
-- **Signature & stamp:** documents requiring a signature use the image in `company/signature/`,
-  inserted by `docx_builder.sign_block()` with the signatory from `bidder_profile`.
-- **Letterhead:** generated documents are built on the `.docx` in `company/letterhead/`.
-- **Stamp-paper / notarised items** (integrity pacts, NDAs, certain undertakings) are generated as
-  drafts only — they must be reprinted on the required stamp paper and wet-signed/notarised. **Flag these.**
-- **Externally-issued certificates** (e.g. an accountant's certificate with a unique registration/UDIN-style
-  number) must come from the issuer — generate the format, but the final must be their signed version.
-- **Single source of truth:** never re-type a fact that lives in `bidder_profile.py` / `company/company-info.json`.
-- **No bid-specific files in generic folders.** Bid outputs go under `bids/<slug>/`.
-- **Verify, don't assume:** confirm financial figures against the audited statements before submitting.
-
-## 6. Before you start a task
-
-- Skim this file and `docs/workflow.md`.
-- Run `python -m toolkit.cli check` to confirm the knowledge base is set up.
-- Open the relevant bid's `checklist.md` for current progress.
+```
+/new <slug>          → scaffold folder
+/parse <slug>        → extract RFP text
+/go-nogo <slug>      → decide whether to bid
+/synopsis <slug>     → brief for stakeholders
+/risks <slug>        → flag problematic clauses
+/contradictions <slug> → find internal conflicts
+/prebid <slug>       → draft clarification questions
+/fill <slug> <form>  → fill each annexure
+/draft <slug> tech   → technical proposal
+/draft <slug> commercial → commercial proposal
+```

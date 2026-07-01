@@ -1,40 +1,35 @@
-# --- OS / Python ---
+# ── OS / editor ──────────────────────────────────────────────────────────────
 .DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# ── Python ───────────────────────────────────────────────────────────────────
 __pycache__/
-*.pyc
+*.py[cod]
 *.egg-info/
 build/
 dist/
 .venv/
 venv/
-.idea/
-.vscode/
 
-# ============================================================================
-# Your private content is kept OUT of git by default, so you never push your
-# letterhead, signature, company documents, or work-in-progress bids by accident.
-# Folder structure is preserved via README.md / .gitkeep files.
-# If you keep a PRIVATE repo and WANT your files versioned, delete the relevant
-# lines below.
-# ============================================================================
-
-# Your filled-in details (contains names, contacts) — uncomment to keep out of git:
-# company/company-info.json
-
-# Letterhead and (especially) the signature/stamp image
+# ── Company data (confidential — never pushed to git) ────────────────────────
+# All your certificates, financials, letterhead, signature, and narrative docs
+# live only on your local machine / Google Drive. Never in git.
+company/company-info.json
+company/about/*
+company/documents/*
+company/experience/*
 company/letterhead/*
 company/signature/*
 
-# Documents, experience proofs, and narrative material you add
-company/documents/*
-company/experience/*
-company/about/*
-
-# Always keep the placeholders so the structure survives a clone
+# Keep folder README stubs so structure survives a fresh clone
 !**/README.md
 !**/.gitkeep
 
-# Per-bid work (keep the template and the bids README)
+# ── Bid work (stays local / on Drive) ────────────────────────────────────────
 bids/*
-!bids/_template/
 !bids/README.md
+!bids/_template/
+!bids/_template/**

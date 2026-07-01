@@ -1,96 +1,153 @@
 # Workflow — RFP to submission
 
-The end-to-end process for one RFP/RFE/tender. Everything for a bid lives in
-`bids/<slug>/`.
+The full sequence from receiving an RFP to a ready-to-submit package.
+Each step corresponds to a Claude Code slash command.
 
-## Step 0 — Create the bid folder
+**Multiple RFPs at once?** No problem — each bid has its own folder under `bids/`.
+Run commands with the specific slug and they won't interfere with each other.
 
-```bash
-rfpkit new <org>-<type>-<year>      # e.g. acme-bank-rfp-2026
+---
+
+## Step 1 — Create the bid folder
+
+```
+/new acme-bank-rfp-2026
 ```
 
-This copies `bids/_template/` and gives you:
+Pick a slug: `buyername-type-year`, all lowercase, hyphens only.
+This creates `bids/acme-bank-rfp-2026/` with all the right subfolders.
+
+Then **upload the RFP PDF** to `bids/acme-bank-rfp-2026/source/`.
+
+---
+
+## Step 2 — Parse the RFP
 
 ```
-bids/<slug>/
-├── README.md          # bid name, reference no., deadlines, status
-├── checklist.md       # the live requirements tracker
-├── source/            # original RFP file(s)
-├── parsed/            # RFP converted to Markdown
-├── outputs/
-│   ├── docx/          # generated/filled annexures + proposal (editable)
-│   └── pdf/, pdf/combined/   # rendered PDFs, and annexure+attachments merged
-└── submission/        # final, organised package ready to submit
+/parse acme-bank-rfp-2026
 ```
 
-## Step 1 — Parse the RFP
+Converts the PDF to readable text at `bids/.../parsed/rfp.md`.
+Claude also builds an initial checklist from the extracted requirements.
 
-Put the original in `source/`. Convert to Markdown into `parsed/`:
-- PDF → `pdfplumber` / `pdftotext` (keeps tables/structure).
-- DOCX → read `word/document.xml` or a docx reader.
+---
 
-## Step 2 — Build the checklist
+## Step 3 — Go / No-Go decision
 
-From the parsed RFP, capture **everything that must be submitted or done** in `checklist.md`:
-eligibility criteria; every annexure/form and what it needs; fees/EMD and exemptions;
-formatting & collation rules; packaging & submission steps; deadlines; and **manual-action
-flags** (stamp paper and its value, notarisation, externally-issued certificates, counter-
-signatures, payments). Track status per item.
-
-## Step 3 — Fill annexures & draft the proposal
-
-Use the toolkit; pull facts from `bidder_profile` (never re-type them).
-
-```python
-import sys; sys.path.insert(0, ".")            # repo root
-from toolkit import docx_builder as db, bidder_profile as p, paths
-
-body = db.heading("Annexure-5") + db.heading("Details of Offices", size=24, after=200)
-rows = [db.tr(db.tc(500,"S.No",bold=True,fill="D9D9D9"),
-              db.tc(3000,"Address",bold=True,fill="D9D9D9"),
-              db.tc(2000,"Contact",bold=True,fill="D9D9D9"))]
-for i, o in enumerate(p.OFFICES, 1):
-    rows.append(db.tr(db.tc(500,str(i)), db.tc(3000,o["address"]),
-                      db.tc(2000,f'{o["contact"]}\n{o.get("phone","")}')))
-body += db.table([500,3000,2000], rows) + db.sign_block()
-
-db.build_docx(body, paths.bid_dir("<slug>") / "outputs/docx/Annexure5.docx")
+```
+/go-nogo acme-bank-rfp-2026
 ```
 
-For the **response proposal** (narrative), draw from `company/about/` (and any
-external proposal library you linked in `company/about/README.md`).
+Claude checks your eligibility against every criterion in the RFP and scores
+technical fit, commercial attractiveness, and risk. Output saved to `analysis/go-nogo.md`.
 
-## Step 4 — Convert to PDF
+Share this with management before investing further effort.
 
-```python
-from toolkit import pdf_tools
-pdf_tools.to_pdf(".../outputs/docx/Annexure5.docx", ".../outputs/pdf")
+---
+
+## Step 4 — Tender synopsis
+
+```
+/synopsis acme-bank-rfp-2026
 ```
 
-## Step 5 — Merge supporting documents
+Produces a one-page summary: buyer, deadline, value, scope, evaluation method, key contacts.
+Saved to `analysis/synopsis.md`. Good for briefing the team.
 
-For each annexure that travels with attachments, merge in the order the RFP specifies:
+---
 
-```python
-from toolkit import pdf_tools, paths
-pdf_tools.merge(
-    [ ".../outputs/pdf/Annexure2.pdf",
-      paths.company_doc("<your-incorporation>.pdf"),
-      paths.company_doc("<your-tax-id>.pdf") ],
-    ".../outputs/pdf/combined/Annexure2_Combined.pdf",
-)
+## Step 5 — Risk analysis
+
+```
+/risks acme-bank-rfp-2026
 ```
 
-Record which attachments belong with which annexure in the checklist.
+Scans every clause for penalty rates, IP transfer, unlimited liability, unreasonable SLAs,
+and other red flags. Each risk is quoted exactly and rated High / Medium / Note.
+Saved to `analysis/risks.md`.
 
-## Step 6 — Assemble the submission
+---
 
-Build `submission/` exactly as the RFP requires — many tenders split into separate parts/
-envelopes with precise super-scribing text; replicate it. Add an index and page numbering.
+## Step 6 — Find contradictions
 
-## Step 7 — Verify
+```
+/contradictions acme-bank-rfp-2026
+```
 
-Walk the checklist top to bottom: every required item present, on letterhead where required,
-signed + stamped, attachments merged, and manual-action items flagged for the human
-(stamp paper, notarisation, externally-issued certificates, counter-signatures, fees). Only
-then is the bid ready to submit.
+Reads the entire RFP and finds where it contradicts itself — conflicting deadlines,
+inconsistent specifications, scope described differently in different sections.
+Saved to `analysis/contradictions.md`.
+
+---
+
+## Step 7 — Pre-bid clarification questions
+
+```
+/prebid acme-bank-rfp-2026
+```
+
+Drafts a formal list of questions to submit to the buyer — drawn from contradictions,
+vague scope, missing specs, and risky clauses. Saved to `analysis/prebid-questions.md`.
+
+Submit these before the pre-bid query deadline stated in the RFP.
+
+---
+
+## Step 8 — Search the RFP
+
+```
+/search acme-bank-rfp-2026 payment terms
+/search acme-bank-rfp-2026 SLA requirements
+```
+
+Find specific information in the RFP at any point in the process.
+
+---
+
+## Step 9 — Fill forms and annexures
+
+```
+/fill acme-bank-rfp-2026 annexure-3
+```
+
+Claude reads the annexure, maps every field to your company data, and generates a
+filled Word document in `outputs/docx/`. Fields without data are flagged clearly.
+
+Run this for each annexure the RFP requires.
+
+---
+
+## Step 10 — Draft the proposal
+
+```
+/draft acme-bank-rfp-2026 tech
+/draft acme-bank-rfp-2026 commercial
+```
+
+Drafts the technical and commercial proposal using your company capabilities,
+past experience, and the RFP requirements. Saved to `outputs/docx/`.
+
+**Review carefully before submission** — fill in any `[PRICE TBD]` placeholders
+and have your team validate the technical content.
+
+---
+
+## Step 11 — Assemble and submit
+
+1. Convert all DOCX to PDF (Claude Code can do this, or use LibreOffice directly)
+2. Merge annexures with their required attachments
+3. Organise the `submission/` folder exactly as the RFP specifies
+4. Walk through `checklist.md` — every item must be ticked before submitting
+5. Flag all `⚠ MANUAL ACTION REQUIRED` items to the relevant person
+
+---
+
+## Working on multiple RFPs simultaneously
+
+Each bid is fully isolated in its own `bids/<slug>/` folder.
+You can have 10 bids in progress at once — just specify the slug in each command.
+
+To see all active bids:
+```
+python -m toolkit.cli list
+```
