@@ -29,14 +29,15 @@ Multiple RFPs can be in progress simultaneously — each lives in its own folder
 
 ## How to get started
 
-**You need:** Claude Code + Google Drive for Desktop. Nothing else.
+**You need:** Claude Code. Nothing else.
 
-1. Clone or download this repository
-2. Open Claude Code in this folder
-3. Type `/setup-drive`
+```bash
+git clone https://github.com/mananaggrawal/claude-rfp-kit
+claude claude-rfp-kit
+```
 
-Claude Code will find your Google Drive, create all the folders, ask you a few questions
-about your company, and have you ready to work on your first RFP in about 5 minutes.
+Claude Code reads the folder, checks what's set up, and tells you exactly what to do next.
+If it's your first time, it walks you through your company profile conversationally — no forms, no config files.
 
 Full setup guide: [`docs/setup.md`](docs/setup.md)
 
@@ -45,13 +46,13 @@ Full setup guide: [`docs/setup.md`](docs/setup.md)
 ## How it works
 
 ```
-company/          ←  your details, filled once
+company/          ←  your details, filled once, reused on every bid
   company-info.json
-  about/          ←  what your company does
-  experience/     ←  past project write-ups
-  documents/      ←  certificates, financials
-  letterhead/     ←  your Word template
-  signature/      ←  your signature image
+  about/          ←  what your company does (markdown files)
+  experience/     ←  past project write-ups (one per project)
+  documents/      ←  certificates, financials (PDFs)
+  letterhead/     ←  your Word template (.docx)
+  signature/      ←  your signature image (.png)
 
 bids/
   acme-bank-2026/ ←  one folder per RFP
@@ -63,7 +64,7 @@ bids/
 ```
 
 Claude Code reads your company data once and reuses it across every bid.
-Your data never leaves your machine (or Google Drive if you choose to use it).
+Your data never leaves your machine.
 
 ---
 

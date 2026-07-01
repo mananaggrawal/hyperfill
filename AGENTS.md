@@ -58,7 +58,6 @@ bids/<slug>/
 ## Command sequence for a new bid
 
 ```
-/setup-drive              → one-time: detect Drive and create folder structure
 /new <slug>               → scaffold bid folder
 /parse <slug>             → read PDF and extract text
 /go-nogo <slug>           → should we bid?
