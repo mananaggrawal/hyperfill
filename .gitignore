@@ -23,8 +23,7 @@ company/*
 .rfp-kit/*
 !.rfp-kit/.gitkeep
 
-# ── Bid work (stays local / on Drive) ────────────────────────────────────────
+# ── Bid work (stays local) ───────────────────────────────────────────────────
 bids/*
-!bids/README.md
 !bids/_template/
 !bids/_template/**
