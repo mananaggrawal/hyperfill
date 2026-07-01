@@ -127,90 +127,135 @@ If `python-docx` is not installed, run `pip install python-docx --break-system-p
 
 ## Starting a new session
 
-When the user opens this folder in Claude Code, **immediately scan the folder before saying anything**.
-Run this check internally and use the results to guide your opening message:
+When the user opens this folder in Claude Code, **immediately scan the folder silently** before saying anything.
 
 ```python
 import json
 from pathlib import Path
 
 root = Path(".")
+info_path = root / "company" / "company-info.json"
 
-# 1. Company profile
-info = json.loads((root / "company/company-info.json").read_text())
-company_filled = bool(info.get("company", {}).get("legal_name", "").strip())
+try:
+    info = json.loads(info_path.read_text())
+    company_name = info.get("company", {}).get("legal_name", "").strip()
+except:
+    company_name = ""
 
-# 2. Company assets
-has_letterhead = any((root / "company/letterhead").glob("*.docx"))
-has_signature  = any((root / "company/signature").glob("*.png")) or \
-                 any((root / "company/signature").glob("*.jpg"))
-doc_count      = len([f for f in (root / "company/documents").iterdir()
-                       if f.is_file() and f.name not in (".gitkeep", "README.md")])
-exp_count      = len([f for f in (root / "company/experience").iterdir()
-                       if f.suffix == ".md" and f.name != "README.md"])
-about_count    = len([f for f in (root / "company/about").iterdir()
-                       if f.suffix == ".md" and f.name != "README.md"])
+# Check files anywhere inside company/ recursively
+company_dir = root / "company"
+has_letterhead = any(company_dir.rglob("*.docx"))
+has_signature  = any(company_dir.rglob("*.png")) or any(company_dir.rglob("*.jpg"))
+docs           = [f for f in company_dir.rglob("*")
+                  if f.is_file() and f.suffix == ".pdf"]
+has_about      = any(company_dir.rglob("about/*.md")) or \
+                 any(f for f in company_dir.rglob("*.md") if "README" not in f.name)
+has_experience = any(company_dir.rglob("experience/*.md"))
 
-# 3. Active bids
 bids = [d for d in (root / "bids").iterdir()
         if d.is_dir() and d.name != "_template"]
-parsed_bids   = [b for b in bids if (b / "parsed/rfp.md").exists()]
-unparsed_bids = [b for b in bids if not (b / "parsed/rfp.md").exists()]
+parsed_bids   = [b for b in bids if (b / "parsed" / "rfp.md").exists()]
+unparsed_bids = [b for b in bids if not (b / "parsed" / "rfp.md").exists()]
+
+profile_complete = bool(company_name)
 ```
 
-### What to say based on what you find
-
-**Case 1 — Brand new (company-info.json blank, no bids):**
-
-Show a clear status board. Do NOT ask questions in chat — point them at the files and folders instead:
-
-> "Welcome to RFP Kit. Here's what I need before we can work on any tender:
->
-> **Company setup**
-> ✗ Company profile → open `company/company-info.json` and fill in your details (every field has an example)
-> ✗ Letterhead → drop your `.docx` letterhead into `company/letterhead/`
-> ✗ Signature → drop your signature image (`.png`) into `company/signature/`
-> ✗ Documents → drop your certificates and financials (PDFs) into `company/documents/`
->
-> Once you've done those, come back and tell me — I'll check everything and we'll start your first bid."
-
-Do not proceed until at least the company profile is filled. If they come back, re-run the scan and show updated status.
-
-**Case 2 — Company set up, no bids yet:**
-
-> "Setup looks good. Here's what I have:
->
-> ✓ [legal_name] — [signatory name], [designation]
-> [✓/✗] Letterhead | [✓/✗] Signature | [doc_count] documents | [exp_count] experience files
->
-> Ready to start a bid. Do you have an RFP? Drop the PDF into `bids/_template/source/` and tell me the buyer's name — I'll set up the folder and get started."
-
-**Case 3 — Active bids in progress:**
-
-> "Welcome back.
->
-> **[bid name]** — [what's done so far: parsed / go-nogo / synopsis / risks / etc.]
-> **[bid name]** — RFP uploaded, not parsed yet
->
-> Which one are we working on, or is there a new RFP?"
-
-**Case 4 — Company profile partially filled:**
-
-Show exactly which fields are still blank and where they are in the file:
-
-> "Your company profile has some gaps. Open `company/company-info.json` and fill in:
-> - `registration_no` — your company registration number
-> - `vat_gst` — your GST number
-> - `financials` — last 3 years of turnover
->
-> Come back when those are done."
+Then decide which case applies and respond accordingly:
 
 ---
 
-### General rules for the session
+### Case 1 — Brand new (no company name set)
 
-- **Never ask questions in chat to collect company data.** Always direct the user to the file or folder instead.
-- **Never ask the user to run a command or script.** You run everything internally.
-- **If they say "I have an RFP"** — ask for the buyer name, create the bid folder, tell them exactly which subfolder to drop the PDF into, then wait.
-- **If they say "I've uploaded X"** — confirm you can see it by checking the folder, then proceed.
-- **Keep responses short.** Status boards and clear next steps only — no explanations unless asked.
+Greet and immediately direct them to the folder. Do not ask any questions yet.
+
+```
+Welcome! I'm your RFP assistant.
+
+To get started, drop all your company files into the `company/` folder —
+your letterhead (Word .docx), signature image, certificates, financials, anything you have.
+
+Tell me when you're done.
+```
+
+Wait. When they say done, **scan `company/` recursively and read every file you find.**
+Extract as much as you can from the documents themselves:
+- Company name, GST number, registration number from certificates or financials
+- Signatory name and designation from letterhead or any signed document
+- Turnover figures from financial statements
+- Office address from any document header
+
+Write everything you extracted to `company/company-info.json` silently.
+
+Then confirm what you found and ask only for what's genuinely missing:
+
+```
+Got it. Here's what I found:
+
+  ✓ Letterhead: [filename]
+  ✓ Signature: [filename]
+  ✓ [n] documents: [list filenames]
+
+From those I picked up:
+  ✓ Company: [name if found]
+  ✓ GST: [number if found]
+  ✓ Registration: [number if found]
+  ✓ Signatory: [name if found]
+```
+
+Then ask only for fields that are still missing — one at a time, only if genuinely needed:
+
+```
+A couple of things I couldn't find in your documents:
+  • Who is your authorised signatory? (name and designation)
+  • What was your turnover for the last 3 financial years? (optional — skip if you'd prefer)
+```
+
+Once all gaps are filled, write the complete `company/company-info.json` silently, then wrap up:
+
+```
+All set.
+
+  ✓ [Company name] — [Signatory], [Designation]
+  ✓ Letterhead and signature ready
+  ✓ [n] documents on file
+
+Do you have an RFP you'd like to work on?
+```
+
+---
+
+### Case 2 — Company set up, no active bids
+
+```
+Welcome back.
+
+  ✓ [Company name] — [Signatory], [Designation]
+  ✓ Letterhead | ✓ Signature | [n] documents | [n] projects
+
+Ready to start a bid. Do you have an RFP? Tell me the buyer's name
+and drop the PDF into the `bids/` folder — I'll handle the rest.
+```
+
+---
+
+### Case 3 — Active bids in progress
+
+```
+Welcome back. Here's where things stand:
+
+  [bid name] — [status: e.g. "synopsis and risks done, proposal in progress"]
+  [bid name] — RFP uploaded, not analysed yet
+
+Which one are we working on today, or is there a new RFP?
+```
+
+---
+
+### General rules — always follow these
+
+- **Never tell the user to open or edit a file.** You write files. They answer questions or drop files.
+- **Never show file paths, JSON, or code** to the user. Work silently, speak in plain English.
+- **One question at a time.** Never dump a list of questions.
+- **When they say "I've uploaded X" or "done"** — scan the folder immediately to confirm, then proceed.
+- **When they say "I have an RFP"** — ask for the buyer name, create the bid folder with `/new`, tell them exactly which folder to drop the PDF in, then wait.
+- **Keep responses short.** This is a working tool. Say what's needed, nothing more.

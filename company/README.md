@@ -1,70 +1,26 @@
-# company/ — Set up once, reused on every bid
+# company/ — Drop all your files here
 
-Everything the tool needs to know about your organisation lives here.
-You fill this in once. Every RFP you work on pulls from it automatically.
+This folder holds everything Claude needs to know about your company.
+**You don't need to organise files into subfolders** — just drop everything here
+and Claude will find what it needs.
 
----
+## What to drop in this folder
 
-## Step 1 — Fill in your company details
+- Your company **letterhead** — a Word `.docx` file
+- Your **signature** — an image of the authorised signatory's signature (`.png` or `.jpg`)
+- Your **certificates** — GST cert, incorporation cert, ISO cert, etc. (PDFs)
+- Your **audited financials** — one PDF per year
+- Any other documents you regularly attach to bids (PDFs)
 
-Open `company-info.json` in any text editor (Notepad, TextEdit, VS Code).
-Replace every empty `""` with your real information.
+## What Claude fills in automatically
 
-Key fields to fill:
-- Company legal name, registration number, GST/tax ID
-- Authorised signatory (the person who signs bid documents)
-- Office address(es)
-- Last 3 years of financials (turnover + net worth)
-- Your go/no-go preferences (minimum contract value, preferred sectors)
+When you open Claude Code for the first time, it will ask you questions about your company
+(name, registration number, GST, signatory, etc.) and write everything to `company-info.json`
+for you. You never need to open or edit that file manually.
 
----
+It will also ask you to describe your company and past projects in plain language —
+and write those as structured files it can reference when drafting proposals.
 
-## Step 2 — Upload your files
+## Privacy
 
-Drag and drop files into the correct subfolder:
-
-| Folder | What to upload | Format |
-|---|---|---|
-| `letterhead/` | Your branded letterhead | Word `.docx` (one file) |
-| `signature/` | Signature of the authorised signatory | Image `.png` (transparent background is best) |
-| `documents/` | Certificates and proofs you attach to every bid | PDF files |
-| `experience/` | Past project write-ups | One `.md` file per project (see template) |
-| `about/` | Company capability descriptions | `.md` files |
-
-### What to upload to `documents/`
-Upload these as PDFs (rename them clearly):
-- Certificate of Incorporation / Registration
-- GST Certificate
-- PAN Card (company)
-- Audited financials (last 3 years) — one PDF per year
-- ISO / PCI / other certifications
-- Bank details letter (on bank letterhead)
-- Any other standing document you regularly attach to bids
-
-### What to upload to `about/`
-These are markdown text files that describe your company.
-Claude reads them when drafting proposals. Create one file per topic:
-- `overview.md` — what your company does, your mission, founding story
-- `technical-capabilities.md` — technology stack, platforms, what you can build
-- `team.md` — team size, key roles, leadership backgrounds
-- `approach.md` — your methodology, how you work with clients
-- `security.md` — data security, compliance posture (if relevant to your bids)
-
-### What to upload to `experience/`
-One markdown file per past project. See the example file in this folder.
-Include: client name, project description, contract value, duration, outcome.
-
----
-
-## Step 3 — Verify setup
-
-Run this command from the RFP Kit folder:
-```
-python -m toolkit.cli check
-```
-
-Or simply open Claude Code in this folder and say: "Check my setup."
-
----
-
-> Your files here are private — they are excluded from git and never uploaded anywhere automatically.
+Everything in this folder stays on your local machine. It is excluded from git.

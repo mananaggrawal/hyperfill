@@ -28,29 +28,40 @@ EXAMPLES_DIR = REPO_ROOT / "examples"
 
 
 def _first(folder: Path, patterns):
+    """Search folder recursively for the first file matching any pattern."""
     for pat in patterns:
-        hits = sorted(p for p in folder.glob(pat) if p.name != ".gitkeep")
+        # Search recursively so users can drop files anywhere inside company/
+        hits = sorted(p for p in folder.rglob(pat)
+                      if p.name not in (".gitkeep", "README.md") and p.is_file())
         if hits:
             return hits[0]
     return None
 
 
 def letterhead() -> Path:
-    """Your letterhead .docx (first one found in company/letterhead/)."""
-    p = _first(LETTERHEAD_DIR, ["*.docx"])
+    """Letterhead .docx — found anywhere inside company/."""
+    p = _first(COMPANY_DIR, ["*.docx"])
     if p is None:
         raise FileNotFoundError(
-            f"No letterhead .docx in {LETTERHEAD_DIR}. Drop your letterhead there.")
+            "No letterhead .docx found in the company/ folder. "
+            "Drop your Word letterhead file there.")
     return p
 
 
 def sign_stamp() -> Path:
-    """Your signature/stamp image (first found in company/signature/)."""
-    p = _first(SIGN_STAMP_DIR, ["*.png", "*.jpg", "*.jpeg"])
+    """Signature image — found anywhere inside company/."""
+    p = _first(COMPANY_DIR, ["*.png", "*.jpg", "*.jpeg"])
     if p is None:
         raise FileNotFoundError(
-            f"No signature image in {SIGN_STAMP_DIR}. Drop your signature/stamp PNG there.")
+            "No signature image found in the company/ folder. "
+            "Drop your signature .png file there.")
     return p
+
+
+def all_documents() -> list:
+    """All PDF documents found anywhere inside company/."""
+    return sorted(p for p in COMPANY_DIR.rglob("*.pdf")
+                  if p.name not in (".gitkeep", "README.md"))
 
 
 def bid_dir(slug: str) -> Path:
