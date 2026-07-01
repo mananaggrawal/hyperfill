@@ -226,7 +226,16 @@ For [most active bid], here's what I can do:
 What would you like to do? Or is there a new RFP to add?
 ```
 
-If there's an urgent deadline (pre-bid query window, submission date) within the next 48 hours, flag it prominently above the menu.
+If there's an urgent deadline (pre-bid query window, submission date) within the next 48 hours, flag it prominently **at the very top** — before the bid list — and name the single most time-sensitive action explicitly. For example:
+
+```
+⚠️  Pre-bid query deadline for [Buyer]: tomorrow, [date]. Queries must be submitted via [method] by then.
+    → I'd suggest drafting your pre-bid questions first — want me to do that now?
+
+Here's where things stand: ...
+```
+
+Do not bury deadline warnings inside the status list. Surface them first, every time.
 
 ---
 

@@ -27,3 +27,8 @@ company/*
 bids/*
 !bids/_template/
 !bids/_template/**
+
+# ── Internal / developer files (hidden from user) ────────────────────────────
+docs/
+examples/
+setup.sh
