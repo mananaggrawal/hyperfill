@@ -15,11 +15,14 @@ dist/
 venv/
 
 # ── Company data (confidential — never pushed to git) ────────────────────────
-# Everything inside company/ is private. Only README stubs are tracked.
+# company/ is a flat drop zone — only the top-level README is tracked.
 company/*
 !company/README.md
-!company/*/README.md
 !**/.gitkeep
+
+# ── Claude's internal memory (stays local only) ───────────────────────────────
+.rfp-kit/*
+!.rfp-kit/.gitkeep
 
 # ── Bid work (stays local / on Drive) ────────────────────────────────────────
 bids/*

@@ -3,23 +3,23 @@ Central path resolver. Every path is resolved RELATIVE to the repo root (the
 folder containing this `toolkit/` directory), so the kit works wherever it's
 cloned. Do NOT hard-code absolute paths elsewhere — import from here.
 
-Everything the user provides lives under a single `company/` folder. The
-letterhead and signature/stamp are discovered by scanning their subfolders, so
-you just drop YOUR files in and the toolkit finds them (no filenames to edit).
+The user drops all their files (flat) into `company/` — no subfolders needed.
+Claude's internal memory (company-info.json, extracted context) lives in `.rfp-kit/`,
+which is hidden and never shown to the user.
 """
 
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
-# --- The one folder the user fills in ---
-COMPANY_DIR    = REPO_ROOT / "company"
-COMPANY_INFO   = COMPANY_DIR / "company-info.json"
-LETTERHEAD_DIR = COMPANY_DIR / "letterhead"
-SIGN_STAMP_DIR = COMPANY_DIR / "signature"
-DOCUMENTS_DIR  = COMPANY_DIR / "documents"
-EXPERIENCE_DIR = COMPANY_DIR / "experience"
-ABOUT_DIR      = COMPANY_DIR / "about"
+# --- User drop zone (flat — user drops files directly here) ---
+COMPANY_DIR  = REPO_ROOT / "company"
+
+# --- Claude's internal memory (hidden from user) ---
+MEMORY_DIR   = REPO_ROOT / ".rfp-kit"
+COMPANY_INFO = MEMORY_DIR / "company-info.json"
+ABOUT_DIR    = MEMORY_DIR / "about"
+EXPERIENCE_DIR = MEMORY_DIR / "experience"
 
 # --- Per-bid task work ---
 BIDS_DIR     = REPO_ROOT / "bids"
@@ -30,7 +30,6 @@ EXAMPLES_DIR = REPO_ROOT / "examples"
 def _first(folder: Path, patterns):
     """Search folder recursively for the first file matching any pattern."""
     for pat in patterns:
-        # Search recursively so users can drop files anywhere inside company/
         hits = sorted(p for p in folder.rglob(pat)
                       if p.name not in (".gitkeep", "README.md") and p.is_file())
         if hits:
@@ -43,8 +42,7 @@ def letterhead() -> Path:
     p = _first(COMPANY_DIR, ["*.docx"])
     if p is None:
         raise FileNotFoundError(
-            "No letterhead .docx found in the company/ folder. "
-            "Drop your Word letterhead file there.")
+            "No letterhead .docx found. Drop your Word letterhead file into the company/ folder.")
     return p
 
 
@@ -53,13 +51,12 @@ def sign_stamp() -> Path:
     p = _first(COMPANY_DIR, ["*.png", "*.jpg", "*.jpeg"])
     if p is None:
         raise FileNotFoundError(
-            "No signature image found in the company/ folder. "
-            "Drop your signature .png file there.")
+            "No signature image found. Drop your signature .png file into the company/ folder.")
     return p
 
 
 def all_documents() -> list:
-    """All PDF documents found anywhere inside company/."""
+    """All PDF documents found inside company/."""
     return sorted(p for p in COMPANY_DIR.rglob("*.pdf")
                   if p.name not in (".gitkeep", "README.md"))
 
@@ -68,17 +65,11 @@ def bid_dir(slug: str) -> Path:
     return BIDS_DIR / slug
 
 
-def company_doc(filename: str) -> Path:
-    return DOCUMENTS_DIR / filename
-
-
-def experience_proof(filename: str) -> Path:
-    return EXPERIENCE_DIR / filename
-
-
 if __name__ == "__main__":
     print("Repo root:", REPO_ROOT)
-    for label, fn in [("Letterhead", letterhead), ("Signature/stamp", sign_stamp)]:
+    print("Company drop zone:", COMPANY_DIR)
+    print("Memory dir:", MEMORY_DIR)
+    for label, fn in [("Letterhead", letterhead), ("Signature", sign_stamp)]:
         try:
             print(f"  {label:16}: OK  {fn()}")
         except FileNotFoundError as e:
