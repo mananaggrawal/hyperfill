@@ -19,14 +19,18 @@ venv/
 company/*
 !company/.gitkeep
 
-# ── Claude's internal memory (stays local only) ───────────────────────────────
+# ── Claude's internal memory + working files (stays local only) ──────────────
 .rfp-kit/*
 !.rfp-kit/.gitkeep
 
-# ── Bid work (stays local) ───────────────────────────────────────────────────
+# ── Bid folders — only the _template scaffold is tracked ─────────────────────
 bids/*
 !bids/_template/
-!bids/_template/**
+!bids/_template/source/
+!bids/_template/source/.gitkeep
+!bids/_template/outputs/
+!bids/_template/outputs/submission/
+!bids/_template/outputs/submission/.gitkeep
 
 # ── Internal / developer files (hidden from user) ────────────────────────────
 docs/
