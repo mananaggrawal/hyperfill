@@ -61,7 +61,7 @@ All your company files and bid documents stay on your local machine only. Nothin
 
 ## Free and open source
 
-MIT licensed — use it, fork it, improve it. Single-user use is free. If you're building an enterprise version or want to customise it for a team, reach out.
+MIT licensed — use it, fork it, improve it. Single-user use is free. If you're building an enterprise version or want to customise it for a team, reach out to manan190303@gmail.com
 
 Contributions welcome — open a PR or file an issue.
 
