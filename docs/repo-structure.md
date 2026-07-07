@@ -7,7 +7,7 @@ hyperfill/
 ├── README.md                  Orientation + quickstart.
 ├── CLAUDE.md                  Entry point Claude Code reads automatically. Canonical rules.
 ├── AGENTS.md                  Condensed operating contract for other agent modes.
-├── CHANGELOG.md                Notable changes to the kit itself.
+├── CHANGELOG.md               Notable changes to the kit itself.
 ├── LICENSE                    MIT.
 │
 ├── company/                   ★ THE ONE FOLDER YOU FILL IN. Flat drop zone, no
@@ -34,7 +34,7 @@ hyperfill/
 │                                 shown raw to the user.
 │   ├── company-info.json      Single source of truth for company facts.
 │   ├── about/                 Capability narrative.
-│   ├── experience/             Past project write-ups.
+│   ├── experience/            Past project write-ups.
 │   └── bids/<slug>/           Parsed RFP, analysis, checklist — per bid.
 │
 ├── bids/                      ONE folder per RFP task, user-visible.

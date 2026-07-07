@@ -131,7 +131,7 @@ def _free_media_filename(media_dir: str, ext: str = ".png") -> str:
     word/media/ folder, so we never overwrite an existing embedded image."""
     n = 1
     while True:
-        candidate = f"claude_rfp_kit_image{n}{ext}"
+        candidate = f"hyperfill_image{n}{ext}"
         if not os.path.exists(os.path.join(media_dir, candidate)):
             return candidate
         n += 1

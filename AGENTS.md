@@ -79,6 +79,11 @@ Everything else is hidden (dot-prefixed) and never surfaced to the user:
 
 ## Key behaviours
 
+- **Loading the toolkit:** `.toolkit/` is dot-prefixed, so a plain
+  `sys.path.insert(...)` + `from toolkit import ...` will NOT work — Python can't
+  resolve a package whose folder name starts with a dot. Load it once per session via
+  `importlib.util.spec_from_file_location` instead; see `.toolkit/README.md` for the
+  exact snippet.
 - **Read PDFs natively** using your Read tool. Never ask the user to convert
   files. If a PDF is scanned/image-only and native reading struggles, fall
   back to `.toolkit/pdf_tools.py`'s `parse_pdf_to_markdown()` only as a

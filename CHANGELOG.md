@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased — rename to Hyperfill + pre-release audit
+
+- **Renamed the project to Hyperfill** across README, CLAUDE.md, AGENTS.md, docs, and
+  package metadata.
+- **Fixed a real import bug:** the documented pattern for loading the toolkit
+  (`sys.path.insert(...)` + `from toolkit import ...`) can never work, because the
+  package directory is `.toolkit/` — a leading dot, which standard Python import
+  resolution cannot match against the name `toolkit`. Every doc referencing this
+  pattern (`.toolkit/README.md`, `CLAUDE.md`, `AGENTS.md`) now documents the correct
+  `importlib.util.spec_from_file_location(...)` bootstrap, verified working end-to-end
+  against the real toolkit modules.
+- Renamed the internal generated-image filename prefix (`claude_rfp_kit_image*.png` →
+  `hyperfill_image*.png`) for consistency with the rename.
+- Minor formatting fixes in `docs/repo-structure.md`'s folder tree.
+
 ## Unreleased — FOSS release readiness
 
 - **Fixed `.gitignore`:** `docs/` and `examples/` were being ignored entirely, so

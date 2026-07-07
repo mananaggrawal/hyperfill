@@ -28,11 +28,30 @@ full operating contract.
 3. **`to_pdf(docx)`** renders it to PDF, if the RFP requires a PDF submission.
 4. **`merge([...], out)`** appends the supporting documents for that annexure.
 
-## Minimal example
+## Loading the toolkit
+
+The package directory is `.toolkit/` — dot-prefixed on purpose, so it never shows up in a
+plain `ls`/Finder listing. That means a normal `sys.path.insert(...)` + `from toolkit import
+...` will **not** work: Python can't resolve a package whose folder name starts with a dot.
+Load it like this instead, once per session:
 
 ```python
-import sys; sys.path.insert(0, "/path/to/repo")     # repo root
-from toolkit import docx_builder as db, bidder_profile as p, pdf_tools, paths
+import sys, importlib.util
+
+REPO_ROOT = "/path/to/repo"  # wherever the kit is cloned
+spec = importlib.util.spec_from_file_location(
+    "toolkit", f"{REPO_ROOT}/.toolkit/__init__.py",
+    submodule_search_locations=[f"{REPO_ROOT}/.toolkit"],
+)
+toolkit = importlib.util.module_from_spec(spec)
+sys.modules["toolkit"] = toolkit
+spec.loader.exec_module(toolkit)
+```
+
+After that, normal imports work as expected:
+
+```python
+from toolkit import docx_builder as db, bidder_profile as p, pdf_tools, xlsx_builder, paths
 
 body = (
     db.heading("Annexure-2")

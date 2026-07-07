@@ -131,6 +131,25 @@ company/*.pdf                   ← certificates, financials, attachments
 
 ## Document generation (internal)
 
+**Loading the toolkit:** the package directory is `.toolkit/` (dot-prefixed, so it's hidden
+from the user). A plain `sys.path.insert(...)` + `from toolkit import ...` will NOT work —
+Python can't resolve a package whose folder name starts with a dot. Load it once per
+session like this instead:
+
+```python
+import sys, importlib.util
+spec = importlib.util.spec_from_file_location(
+    "toolkit", "<repo_root>/.toolkit/__init__.py",
+    submodule_search_locations=["<repo_root>/.toolkit"],
+)
+toolkit = importlib.util.module_from_spec(spec)
+sys.modules["toolkit"] = toolkit
+spec.loader.exec_module(toolkit)
+from toolkit import docx_builder, xlsx_builder, pdf_tools, bidder_profile, paths
+```
+
+See `.toolkit/README.md` for a full worked example.
+
 When generating a Word document:
 - Find the letterhead (first `.docx` anywhere in `company/`)
 - Find the signature image (first `.png` or `.jpg` anywhere in `company/`)
