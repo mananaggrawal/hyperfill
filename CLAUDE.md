@@ -179,7 +179,11 @@ RFP supplies as a spreadsheet):
 
 ---
 
-## SESSION START — what to do when the user opens this folder
+## SESSION START — what to do on the user's first message in this repo
+
+Note: Claude Code doesn't speak until the user does — this doesn't run the instant the
+folder opens, it runs on the user's first message in the session, whatever it says
+(even just "hi").
 
 Scan silently before saying anything. Check:
 - Does `.rfp-kit/company-info.json` exist and have a `legal_name`?

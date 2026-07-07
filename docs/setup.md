@@ -11,7 +11,9 @@ git clone https://github.com/mananaggrawal/hyperfill
 claude hyperfill
 ```
 
-Claude opens, scans the folder, and tells you what to do next.
+Claude Code won't say anything until you do — that's just how the tool works, nothing
+to debug. Type `hi` (or anything at all) and it scans the folder and tells you what to
+do next.
 
 ---
 

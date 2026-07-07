@@ -130,7 +130,10 @@ cd hyperfill
 claude .
 ```
 
-The assistant opens your company folder automatically, reads whatever you drop in, and walks you through setup conversationally — no config files, no forms to fill.
+Claude Code waits for you to say something first — it won't speak until you do. Just type
+`hi` (or anything) and it takes it from there: opens your company folder automatically,
+reads whatever you drop in, and walks you through setup conversationally — no config files,
+no forms to fill.
 
 ---
 
