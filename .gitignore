@@ -32,7 +32,10 @@ bids/*
 !bids/_template/outputs/submission/
 !bids/_template/outputs/submission/.gitkeep
 
-# ── Internal / developer files (hidden from user) ────────────────────────────
-docs/
-examples/
-setup.sh
+# ── Claude Code local settings (machine-specific, not part of the kit) ───────
+.claude/
+
+# ── Internal company material — never public ──────────────────────────────────
+# Company-specific onboarding docs some forks may keep at the repo root; not
+# part of the kit itself and must never be committed.
+onboarding-guides/

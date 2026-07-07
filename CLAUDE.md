@@ -85,10 +85,15 @@ rfp-kit/
    and checklist all live here — hidden from the user.
 
 6. **Read PDFs natively.** Use your Read tool directly on PDF files. Never ask the user to
-   convert them.
+   convert them. If a PDF looks scanned/image-only (native reading returns little or no
+   text), say so — `.toolkit/pdf_tools.py` can't OCR scanned pages either, so don't silently
+   produce a thin or empty extract. Ask the user for a text-based copy if one exists.
 
-7. **Generate documents yourself.** Use `.toolkit/docx_builder.py` for Word documents.
-   Install missing dependencies silently (`pip install python-docx --break-system-packages`).
+7. **Generate documents yourself.** Use `.toolkit/docx_builder.py` for Word documents and
+   `.toolkit/xlsx_builder.py` for Excel documents (BOQs, pricing sheets, spreadsheet
+   annexures — many commercial RFPs need these, not just Word). Install missing
+   dependencies silently
+   (`pip install python-docx openpyxl pypdf pdfplumber --break-system-packages`).
    The user never sees installation — handle it transparently.
 
 8. **Be conversational, not technical.** Never surface Python errors, file paths, or
@@ -98,6 +103,16 @@ rfp-kit/
 
 10. **Always show a lettered menu.** After completing any task or at session start, always
     end with a lettered list of options. The user should never have to guess — they just type a letter.
+
+11. **Update company facts through `bidder_profile.save()`, never a raw overwrite.** It
+    backs up the previous `.rfp-kit/company-info.json` to `company-info.backup.json`
+    before writing, so a bad extraction can always be undone.
+
+12. **Handle addenda and corrigenda separately from the original RFP.** If a buyer issues
+    an amendment after the original RFP, parse it on its own and reconcile it against
+    `.rfp-kit/bids/<slug>/parsed/rfp.md` and `checklist.md` — call out exactly what changed
+    (new deadline, revised scope, added/removed requirement). Never silently overwrite the
+    original extract; keep both and note which clauses were superseded.
 
 ---
 
@@ -122,6 +137,13 @@ When generating a Word document:
 - Use `.toolkit/docx_builder.py`
 - Save output to `bids/<slug>/outputs/`
 - Tell the user the file is ready — nothing else
+
+When generating an Excel document (BOQ, pricing sheet, or any annexure the
+RFP supplies as a spreadsheet):
+- If the RFP shipped its own `.xlsx` template, use `xlsx_builder.fill_template()`
+  to fill it in place rather than rebuilding it — preserve the buyer's formatting.
+- If there's no template, use `xlsx_builder.build_workbook()`.
+- Save output to `bids/<slug>/outputs/`, same as Word documents.
 
 ---
 
@@ -171,7 +193,8 @@ Tell me when you're done and I'll take it from there.
 - Address from any document header
 - ISO / other certifications from cert PDFs
 
-Write everything to `.rfp-kit/company-info.json`. Then confirm:
+Write everything to `.rfp-kit/company-info.json` via `bidder_profile.save()` (this backs
+up any previous version automatically). Then confirm:
 
 ```
 Got it. Here's what I picked up from your documents:
@@ -342,20 +365,25 @@ Trigger this when:
    - "Signed letterhead / covering letter" → already in outputs/
 
 3. Copy (never move) matched files from `company/` into `bids/<slug>/outputs/submission/`.
-   Rename each copy to something descriptive — e.g. `Vegapay_GST_Certificate.pdf`.
+   Rename each copy to something descriptive — e.g. `AcmeCorp_GST_Certificate.pdf`.
 
 4. Also copy all filled forms and proposals from `bids/<slug>/outputs/` into
    `bids/<slug>/outputs/submission/`.
 
-5. Generate a submission manifest at `bids/<slug>/outputs/submission/MANIFEST.md` listing:
+5. Check the RFP's submission instructions for a PDF requirement. If it asks for a single
+   combined PDF per annexure or bid part (rather than separate DOCX/PDF files), use
+   `.toolkit/pdf_tools.py`: `to_pdf()` each DOCX, then `merge()` it with its supporting
+   attachments into the combined PDF, per the RFP's expected structure.
+
+6. Generate a submission manifest at `bids/<slug>/outputs/submission/MANIFEST.md` listing:
    - Every required document
    - Whether it's included (✓) or missing (⬜)
    - For missing items: whether it's a manual action (demand draft, notarised doc, wet signature)
      or something that needs to be sourced
 
-6. Open the submission folder — run `open bids/<slug>/outputs/submission/` on Mac.
+7. Open the submission folder — run `open bids/<slug>/outputs/submission/` on Mac.
 
-7. Tell the user:
+8. Tell the user:
 
 ```
 Submission package assembled. Here's what's in it:

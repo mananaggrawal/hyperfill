@@ -1,19 +1,17 @@
 [project]
 name = "claude-rfp-kit"
-version = "0.1.0"
-description = "A Claude Code framework for generating RFP/RFE/tender responses from a reusable company knowledge base."
+version = "0.2.0"
+description = "A Claude Code framework for generating RFP/RFE/tender responses from a reusable company knowledge base. No CLI — Claude imports these modules directly as part of the conversation."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
 dependencies = [
   "pdfplumber>=0.10",
   "python-docx>=1.1",
+  "openpyxl>=3.1",
   "pypdf>=4.0",
   "Pillow>=10.0",
 ]
-
-[project.scripts]
-rfpkit = "toolkit.cli:main"
 
 [build-system]
 requires = ["setuptools>=61"]

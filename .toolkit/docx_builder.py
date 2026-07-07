@@ -4,7 +4,9 @@ Letterhead-based DOCX builder.
 Mechanics (reusable for any organisation):
   1. copy your letterhead .docx (preserves logo, header, footer)
   2. inject WordprocessingML into document.xml just before <w:sectPr>
-  3. embed your signature/stamp image as rId9
+  3. embed your signature/stamp image under a relationship ID that's
+     guaranteed free in that specific letterhead (never hardcoded — some
+     letterheads already use rId9 for their own logo)
   4. repack the .docx
 
 Compose the body with the helpers (para / heading / table / tr / tc / sign_block),
@@ -12,6 +14,7 @@ then call build_docx(body_xml, output_path). Content is bid-specific; plumbing i
 """
 
 import os
+import re
 import shutil
 import zipfile
 from datetime import datetime
@@ -20,6 +23,12 @@ from . import paths
 from . import bidder_profile as profile
 
 FONT = "Arial"
+
+# sign_block() can't know the final relationship ID until build_docx() has
+# inspected the specific letterhead's existing relationships, so it emits
+# this placeholder and build_docx() substitutes the real, free rId before
+# injecting the body into document.xml.
+_SIGN_RID_PLACEHOLDER = "{{SIGN_IMAGE_RID}}"
 
 
 # ───────────────────────── XML helpers ─────────────────────────
@@ -91,8 +100,8 @@ def sign_block(date_str=None, signatory=None, place=None):
         '<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">'
         '<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'
         '<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">'
-        '<pic:nvPicPr><pic:cNvPr id="0" name="image4.png"/><pic:cNvPicPr/></pic:nvPicPr>'
-        '<pic:blipFill><a:blip r:embed="rId9" '
+        '<pic:nvPicPr><pic:cNvPr id="0" name="Signature"/><pic:cNvPicPr/></pic:nvPicPr>'
+        f'<pic:blipFill><a:blip r:embed="{_SIGN_RID_PLACEHOLDER}" '
         'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>'
         '<a:stretch><a:fillRect/></a:stretch></pic:blipFill>'
         '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="1828800" cy="888693"/></a:xfrm>'
@@ -108,9 +117,30 @@ def sign_block(date_str=None, signatory=None, place=None):
 
 # ───────────────────────── core build ─────────────────────────
 
+def _free_relationship_id(rels_xml: str) -> str:
+    """Return an rId not already used in this letterhead's relationships file."""
+    used = {int(n) for n in re.findall(r'Id="rId(\d+)"', rels_xml)}
+    n = 1
+    while n in used:
+        n += 1
+    return f"rId{n}"
+
+
+def _free_media_filename(media_dir: str, ext: str = ".png") -> str:
+    """Return a media filename that doesn't already exist in the letterhead's
+    word/media/ folder, so we never overwrite an existing embedded image."""
+    n = 1
+    while True:
+        candidate = f"claude_rfp_kit_image{n}{ext}"
+        if not os.path.exists(os.path.join(media_dir, candidate)):
+            return candidate
+        n += 1
+
+
 def build_docx(body_xml: str, output_path: str, letterhead=None, sign_image=None) -> str:
     """Clone the letterhead, inject body_xml before <w:sectPr>, embed the
-    signature image as rId9, and write the finished .docx to output_path."""
+    signature image under a relationship ID that's free in this specific
+    letterhead, and write the finished .docx to output_path."""
     letterhead = str(letterhead or paths.letterhead())
     sign_image = str(sign_image or paths.sign_stamp())
     output_path = str(output_path)
@@ -126,6 +156,29 @@ def build_docx(body_xml: str, output_path: str, letterhead=None, sign_image=None
     with zipfile.ZipFile(output_path, "r") as zf:
         zf.extractall(temp_dir)
 
+    # Only touch media/relationships if the body actually uses sign_block() —
+    # documents without a signature shouldn't gain an unused image + relationship.
+    if _SIGN_RID_PLACEHOLDER in body_xml:
+        media = os.path.join(temp_dir, "word", "media")
+        os.makedirs(media, exist_ok=True)
+        media_filename = _free_media_filename(media)
+        shutil.copy(sign_image, os.path.join(media, media_filename))
+
+        rels_path = os.path.join(temp_dir, "word", "_rels", "document.xml.rels")
+        with open(rels_path, encoding="utf-8") as f:
+            rels = f.read()
+        sign_rid = _free_relationship_id(rels)
+        rel = (f'<Relationship Id="{sign_rid}" '
+               'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" '
+               f'Target="media/{media_filename}"/>')
+        rels = rels.replace("</Relationships>", rel + "</Relationships>")
+        with open(rels_path, "w", encoding="utf-8") as f:
+            f.write(rels)
+
+        # Now that we know the free rId, resolve the placeholder sign_block()
+        # left in the body before injecting it into document.xml.
+        body_xml = body_xml.replace(_SIGN_RID_PLACEHOLDER, sign_rid)
+
     doc_xml = os.path.join(temp_dir, "word", "document.xml")
     with open(doc_xml, encoding="utf-8") as f:
         content = f.read()
@@ -134,20 +187,6 @@ def build_docx(body_xml: str, output_path: str, letterhead=None, sign_image=None
     content = content[:last_p + 6] + body_xml + content[last_p + 6:]
     with open(doc_xml, "w", encoding="utf-8") as f:
         f.write(content)
-
-    media = os.path.join(temp_dir, "word", "media")
-    os.makedirs(media, exist_ok=True)
-    shutil.copy(sign_image, os.path.join(media, "image4.png"))
-    rels_path = os.path.join(temp_dir, "word", "_rels", "document.xml.rels")
-    with open(rels_path, encoding="utf-8") as f:
-        rels = f.read()
-    if "rId9" not in rels:
-        rel = ('<Relationship Id="rId9" '
-               'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" '
-               'Target="media/image4.png"/>')
-        rels = rels.replace("</Relationships>", rel + "</Relationships>")
-    with open(rels_path, "w", encoding="utf-8") as f:
-        f.write(rels)
 
     with zipfile.ZipFile(output_path, "w", zipfile.ZIP_DEFLATED) as docx:
         for root, _, files in os.walk(temp_dir):

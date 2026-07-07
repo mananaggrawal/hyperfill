@@ -90,6 +90,36 @@ def all_documents() -> list[Path]:
     )
 
 
+def company_doc(name_fragment: str) -> Path | None:
+    """Find a file in company/ whose name contains `name_fragment` (case-insensitive).
+
+    Used for submission assembly — matching a required enclosure (e.g. "GST",
+    "incorporation") to whatever the user actually dropped into company/.
+    Returns None if nothing matches rather than raising, since submission
+    assembly needs to keep going and flag the miss instead of crashing.
+    """
+    frag = name_fragment.lower()
+    hits = sorted(
+        p for p in COMPANY_DIR.rglob("*")
+        if p.is_file() and p.name not in (".gitkeep", "README.md")
+        and frag in p.name.lower()
+    )
+    return hits[0] if hits else None
+
+
+def experience_proof(name_fragment: str) -> Path | None:
+    """Find a file in .rfp-kit/experience/ whose name contains `name_fragment`."""
+    frag = name_fragment.lower()
+    if not EXPERIENCE_DIR.exists():
+        return None
+    hits = sorted(
+        p for p in EXPERIENCE_DIR.rglob("*")
+        if p.is_file() and p.name not in (".gitkeep", "README.md")
+        and frag in p.name.lower()
+    )
+    return hits[0] if hits else None
+
+
 if __name__ == "__main__":
     print("Repo root    :", REPO_ROOT)
     print("Company dir  :", COMPANY_DIR)

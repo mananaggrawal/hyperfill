@@ -4,25 +4,24 @@ One folder per RFP/RFE/tender. Each is a self-contained task.
 
 ## Start a new bid
 
-```bash
-rfpkit new <org>-<type>-<year>      # e.g. acme-bank-rfp-2026
-```
+Just tell Claude: *"I have a new RFP from [buyer name]"*. It creates the
+folder, opens `source/` for you, and asks you to drop the RFP PDF in.
+No command to run and no template to copy by hand.
 
-(or `cp -r bids/_template bids/<slug>`). Then follow [`../docs/workflow.md`](../docs/workflow.md):
-put the RFP in `source/`, parse it to `parsed/`, build `checklist.md`, generate annexures
-and the proposal into `outputs/`, and assemble `submission/`.
-
-## Per-bid layout
+## Per-bid layout (what you see)
 
 ```
 <slug>/
-├── README.md          bid name, reference no., deadlines, status
-├── checklist.md       live requirements tracker
-├── source/            original RFP file(s)
-├── parsed/            RFP as Markdown
-├── outputs/           docx / pdf / pdf/combined
-└── submission/        final package, organised as the RFP requires
+├── source/            original RFP file(s), and any addenda/corrigenda
+└── outputs/           filled annexures, proposals, and:
+      └── submission/  final package, organised as the RFP requires,
+                        with a MANIFEST.md listing what's included
 ```
 
-> Bid folders are git-ignored by default (they hold work-in-progress and may contain
-> client material). Keep `_template/` tracked.
+The parsed RFP text, analysis (go/no-go, risks, synopsis, contradictions),
+and the live requirements checklist for each bid live in the hidden
+`.rfp-kit/bids/<slug>/` folder — Claude reads and writes these directly; you
+never need to open them.
+
+> Bid folders are git-ignored by default (they hold work-in-progress and may
+> contain client material).
