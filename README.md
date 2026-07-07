@@ -181,7 +181,7 @@ proceeding.
 ## Free and open source
 
 MIT licensed — use it, fork it, improve it. Single-user use is free. If you're building an
-enterprise version or want to customise it for a team, reach out.
+enterprise version or want to customise it for a team, reach out to manan190303@gmail.com.
 
 Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for how the project is
 organised and what to keep in mind before opening a PR. Please also read the
