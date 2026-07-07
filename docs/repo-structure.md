@@ -3,7 +3,7 @@
 Guiding principle: **the user sees exactly two folders — `company/` and `bids/<slug>/{source,outputs}` — everything else is the engine.**
 
 ```
-claude-rfp-kit/
+hyperfill/
 ├── README.md                  Orientation + quickstart.
 ├── CLAUDE.md                  Entry point Claude Code reads automatically. Canonical rules.
 ├── AGENTS.md                  Condensed operating contract for other agent modes.

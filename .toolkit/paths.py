@@ -1,5 +1,5 @@
 """
-Central path resolver for the RFP Kit.
+Central path resolver for Hyperfill.
 
 User-visible structure (two folders only):
   company/                  ← flat drop zone for all company files

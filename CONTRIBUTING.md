@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for considering a contribution to RFP Kit. This is a small, focused project —
+Thanks for considering a contribution to Hyperfill. This is a small, focused project —
 here's how to get a change in.
 
 ## Before you start

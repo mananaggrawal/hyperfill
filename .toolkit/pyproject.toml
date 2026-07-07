@@ -1,5 +1,5 @@
 [project]
-name = "claude-rfp-kit"
+name = "hyperfill"
 version = "0.2.0"
 description = "A Claude Code framework for generating RFP/RFE/tender responses from a reusable company knowledge base. No CLI — Claude imports these modules directly as part of the conversation."
 readme = "README.md"

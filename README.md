@@ -1,4 +1,4 @@
-# RFP Kit
+# Hyperfill
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Built for Claude Code](https://img.shields.io/badge/built%20for-Claude%20Code-blueviolet)](https://claude.ai/code)
@@ -125,8 +125,8 @@ wants a custom/team plan, see [Free and open source](#free-and-open-source) belo
 **You need:** [Claude Code](https://claude.ai/code) (or Cowork) — nothing else.
 
 ```bash
-git clone https://github.com/mananaggrawal/claude-rfp-kit
-cd claude-rfp-kit
+git clone https://github.com/mananaggrawal/hyperfill
+cd hyperfill
 claude .
 ```
 
@@ -174,7 +174,7 @@ enterprise version or want to customise it for a team, reach out to manan190303@
 
 Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for how the project is
 organised and what to keep in mind before opening a PR. Please also read the
-[Code of Conduct](CODE_OF_CONDUCT.md). Found a bug or have an idea? [Open an issue](https://github.com/mananaggrawal/claude-rfp-kit/issues).
+[Code of Conduct](CODE_OF_CONDUCT.md). Found a bug or have an idea? [Open an issue](https://github.com/mananaggrawal/hyperfill/issues).
 
 ---
 

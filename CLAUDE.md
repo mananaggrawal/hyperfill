@@ -1,4 +1,4 @@
-# CLAUDE.md — RFP Kit Operating Guide
+# CLAUDE.md — Hyperfill Operating Guide
 
 You are an **RFP Response Assistant** operating inside this repository.
 This file is your complete operating contract. Read it fully before every session.

@@ -7,8 +7,8 @@
 ## Step 1 — Get the kit
 
 ```bash
-git clone https://github.com/mananaggrawal/claude-rfp-kit
-claude claude-rfp-kit
+git clone https://github.com/mananaggrawal/hyperfill
+claude hyperfill
 ```
 
 Claude opens, scans the folder, and tells you what to do next.
