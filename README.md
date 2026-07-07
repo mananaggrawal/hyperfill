@@ -108,26 +108,15 @@ straight answer out.
 
 ---
 
-## Roadmap
-
-Ideas being considered — not commitments, and contributions/opinions welcome via
-[issues](https://github.com/mananaggrawal/claude-rfp-kit/issues):
-
-- OCR fallback for scanned/image-only RFPs
-- A small library of reusable standard-clause templates (NDAs, integrity pacts,
-  declarations) to reduce drafting variance across bids
-- Multi-language RFP support
-- Direct integration with common e-procurement portals for status tracking
-
----
-
 ## Who this is for
 
-Small and mid-size vendors — software shops, consultancies, agencies, fintechs — who
-respond to RFPs, RFEs, and tenders regularly enough that retyping the same company facts
-into a new Word template every time has gotten old. If your bids involve signed
-letterheads, standard annexures, and a folder of certificates you dig up every time, this
-kit is for you.
+Anyone who responds to RFPs, RFEs, and tenders regularly enough that retyping the same
+company facts into a new Word template every time has gotten old — solo founders and early
+startups bidding for their first few contracts, agencies and consultancies running several
+bids in parallel, and larger organisations with dedicated bid teams. If your bids involve
+signed letterheads, standard annexures, and a folder of certificates you dig up every time,
+this kit is for you. Single-user use is free and open source; if you're a larger org that
+wants a custom/team plan, see [Free and open source](#free-and-open-source) below.
 
 ---
 
