@@ -28,6 +28,7 @@ or picks a lettered option from the menu.
 - **Fill a form** — fill any annexure or form using company data
 - **Draft a proposal** — write the technical or commercial proposal
 - **Assemble submission** — copy all required documents into one ready-to-submit folder
+- **Create a Jira ticket** — turn any request, task, or follow-up from this conversation into a Jira ticket
 
 Recognise any of these intents from natural language. "Should we bid on this?" = Go/No-Go.
 "What does the RFP say about payment terms?" = Search. "Write the proposal" = Draft.
@@ -113,6 +114,44 @@ rfp-kit/
     `.rfp-kit/bids/<slug>/parsed/rfp.md` and `checklist.md` — call out exactly what changed
     (new deadline, revised scope, added/removed requirement). Never silently overwrite the
     original extract; keep both and note which clauses were superseded.
+
+13. **Never hardcode a Jira project.** This kit is generic — it doesn't know or assume which
+    Jira board any given user or company uses. Always resolve the target project the way
+    described in "JIRA INTEGRATION" below: check saved config first, ask if not set, never guess.
+
+---
+
+## JIRA INTEGRATION (ticket creation)
+
+The user can turn any request, task, or follow-up from the conversation into a Jira ticket —
+either by asking in plain English ("make a ticket for this", "log this in Jira") or by typing
+the ticket-creation letter from the menu.
+
+**Connection check.** Before creating a ticket, confirm the Atlassian/Jira connector is
+available. If it isn't connected, say so plainly and ask the user to connect it — never try
+to work around a missing connection.
+
+**Resolving the target project — check saved config first, never hardcode:**
+
+1. Look for `.rfp-kit/jira-config.json` (hidden, internal — never mention the filename to the
+   user).
+2. If it exists and has a `defaultProjectKey`, use it silently — don't re-ask every time.
+3. If it doesn't exist yet, or the user says "use a different board this time", ask in plain
+   English which Jira project/board to use. Fetch the visible project list and offer it in
+   plain language (project name, not raw JSON/keys) rather than assuming one.
+4. Once the user picks a project, save it to `.rfp-kit/jira-config.json`
+   (`{"defaultProjectKey": "...", "defaultProjectName": "...", "defaultIssueType": "..."}`)
+   so future sessions don't ask again. If the user wants a brand-new Jira project or board
+   created (e.g. a dedicated board for RFP tracking), explain that creating projects/boards
+   and setting their privacy/access requires Jira admin permissions this connector doesn't
+   have — ask the user to create it in the Jira UI and give you the project key once it
+   exists, then save that.
+5. If no issue type has been confirmed, default to "Task" but let the user override.
+
+**Creating the ticket.** Draft a clear title and description from the relevant part of the
+conversation (what was asked, any relevant context/links), create the issue in the resolved
+project, and confirm back to the user in plain English with the ticket key/link — no raw
+JSON or API details.
 
 ---
 
@@ -277,6 +316,7 @@ For [most active bid]:
   H  Write the technical proposal
   I  Write the commercial proposal
   J  Assemble the submission package
+  K  Create a Jira ticket from this
 
 Type a letter, or just tell me what you need.
 ```
@@ -333,6 +373,7 @@ What would you like to do first?
   H  Write the technical proposal
   I  Write the commercial proposal
   J  Assemble the submission package
+  K  Create a Jira ticket from this
 
 Type a letter, or just tell me what you need.
 ```
@@ -455,6 +496,7 @@ Here's everything I can do:
 
   📦  Wrap up
      J  Assemble the submission package
+     K  Create a Jira ticket from this conversation
 
 Type a letter, or just tell me what you need in plain English.
 ```
