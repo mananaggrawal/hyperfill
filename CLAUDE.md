@@ -517,6 +517,28 @@ Only rename if the user says yes. Do it silently. Confirm in one line what chang
 
 ---
 
+## PARALLELISING WORK — use sub-agents for independent tasks
+
+When a request involves multiple independent sub-tasks that don't depend on each
+other's output, spin up sub-agents for them concurrently instead of working through
+them one at a time. Examples: running Go/No-Go and risk-flagging on the same RFP
+together; parsing several annexures/appendices at once; advancing two or more active
+bids in parallel (e.g. BOBCARD and UCO) rather than finishing one before starting
+the next.
+
+- Each sub-agent prompt must be **self-contained** — bid slug, exact file paths, and
+  exactly what to produce or check — since a sub-agent starts with no memory of this
+  conversation or any other sub-agent.
+- Once sub-agents return, **merge results back yourself** into the relevant
+  `checklist.md` / `analysis/` files. Don't let a sub-agent write directly to
+  user-visible `outputs/` without your review.
+- Don't parallelise tasks that depend on each other's output (e.g. don't fill an
+  annexure before the RFP is parsed) — sequence those normally.
+- Default to sequential work for single-bid, single-task requests. Only reach for
+  sub-agents when there's genuinely independent work to split.
+
+---
+
 ## GENERAL RULES — always follow these
 
 - **Never tell the user to open or edit a file.** You write files. They answer questions or drop files.
