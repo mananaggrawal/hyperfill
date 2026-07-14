@@ -119,6 +119,13 @@ rfp-kit/
     Jira board any given user or company uses. Always resolve the target project the way
     described in "JIRA INTEGRATION" below: check saved config first, ask if not set, never guess.
 
+14. **Auto-run Go/No-Go, Synopsis, Risks, and Contradictions (A–D) plus the checklist as soon
+    as an RFP is parsed — never wait for the user to request them.** See "BID SETUP FLOW" below
+    for the exact sequence. This applies to every new RFP and every addendum/corrigendum (rule 12).
+    Once written, treat A–D as already-answered — surface the saved file's content on request
+    rather than re-running the analysis, unless the user asks for a redo or the underlying RFP
+    changed.
+
 ---
 
 ## JIRA INTEGRATION (ticket creation)
@@ -344,7 +351,24 @@ and let me know when it's in.
 Got it — reading the RFP now.
 ```
 
-Parse silently. Write structured markdown to `.rfp-kit/bids/<slug>/parsed/rfp.md`. Then surface:
+**Parse, then auto-run A–D and the checklist — do not wait for the user to ask.**
+The moment a new RFP (or a corrigendum/addendum, per rule 12) lands in `source/` and is
+confirmed, run this full sequence yourself, silently, before saying anything else:
+
+1. Parse the RFP. Write structured markdown to `.rfp-kit/bids/<slug>/parsed/rfp.md`.
+2. Run Go/No-Go (A) → `.rfp-kit/bids/<slug>/analysis/go-no-go.md`
+3. Write the one-page synopsis (B) → `.rfp-kit/bids/<slug>/analysis/synopsis.md`
+4. Flag risky/red-flag clauses (C) → `.rfp-kit/bids/<slug>/analysis/risks.md`
+5. Find contradictions/vague requirements (D) → `.rfp-kit/bids/<slug>/analysis/contradictions.md`
+6. Build the submission checklist → `.rfp-kit/bids/<slug>/checklist.md`, including a
+   **🚨 Manual actions** section (stamp paper, notarisation, wet signatures, demand drafts,
+   funds transfers, pre-bid clarifications worth raising, anything needing the user's decision)
+
+If there are multiple independent bids awaiting this treatment, or a single RFP is large enough
+that these five outputs are genuinely independent, use sub-agents in parallel per the
+"PARALLELISING WORK" section below — but always merge results back into the files above yourself.
+
+Only after all five are written, surface a single combined summary:
 
 ```
 Done. Here's what [Buyer name] is asking for:
@@ -356,17 +380,24 @@ Key dates:
   • Submission deadline: [date]
   • [other critical dates]
 
+I've already gone ahead and run the full first pass:
+  ✓ Go/No-Go — [one-line verdict]
+  ✓ One-page synopsis
+  ✓ Risk & red-flag review — [n] flagged, [m] high severity
+  ✓ Contradiction check — [n] found
+  ✓ Submission checklist — [n] manual actions flagged
+
 A few things caught my eye:
   • [flag 1]
   • [flag 2]
   • [flag 3]
 
-What would you like to do first?
+Want the full detail on any of these, or ready to move to drafting?
 
-  A  Go / No-Go — should you bid?
-  B  Summarise the RFP in one page
-  C  Flag risky or red-flag clauses
-  D  Find contradictions or vague requirements
+  A  Go / No-Go — should you bid? (already run — ask to see it)
+  B  Summarise the RFP in one page (already run — ask to see it)
+  C  Flag risky or red-flag clauses (already run — ask to see it)
+  D  Find contradictions or vague requirements (already run — ask to see it)
   E  Answer a specific question about the RFP
   F  Draft pre-bid questions to send the buyer
   G  Fill a form or annexure with your company data
@@ -377,6 +408,11 @@ What would you like to do first?
 
 Type a letter, or just tell me what you need.
 ```
+
+If the user then types A/B/C/D, don't redo the work — just surface the already-written file's
+content in plain English. Only re-run one of these if the user explicitly asks you to redo it
+(e.g. after an addendum changes the RFP) or if the underlying `parsed/rfp.md` has changed since
+the analysis file was last written.
 
 ---
 
