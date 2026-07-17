@@ -257,19 +257,32 @@ markdown regardless of how the link was actually stored, so the API response can
 whether the blockCard rendered correctly — if it matters, ask the user to eyeball the live
 ticket in the browser rather than trusting the read-back.
 
-**Transporting a local file's bytes to Drive.** `create_file`'s `base64Content` parameter has to
-be authored by Claude directly in the tool call — there is no path-based upload for MCP tools.
-This isn't just fragile (a single dropped/altered character anywhere breaks the whole file) —
-it's also expensive: base64-encoding a typical few-dozen-KB letterheaded docx produces
-50-70K+ characters, and reading that back through any tool (bash, Read) to relay it into the
-`create_file` call costs tens of thousands of tokens per file, before you've even sent it.
-For a batch of several documents this is both unreliable and impractically expensive — don't
-attempt it as a first choice. Before attempting this on a real letterhead-based docx (which
-embeds images and is rarely small) at all, sanity-check the approach on a throwaway few-KB file
-first. If manual relay
-isn't reliably possible in a given session, say so plainly, and either ask the user to drag the
-local file into Drive themselves (fastest), or try the Claude-in-Chrome upload path (navigate to
-the Drive folder, use its native file-input upload) instead of forcing the base64 path.
+**Transporting a local file's bytes to Drive — prefer Claude-in-Chrome, not base64.** The Drive
+MCP's `create_file` only accepts inline `base64Content` — there's no path-based upload. Relaying
+a real letterhead-based docx (which embeds images and is rarely small) as base64 through the
+conversation is both fragile (a single dropped/altered character anywhere breaks the whole file)
+and expensive (50-70K+ characters per file, tens of thousands of tokens just to read it back
+before you've even sent it) — don't attempt this as a first choice, and don't retry it blindly
+if it fails once.
+
+Instead, if Claude-in-Chrome is connected: navigate to the target Drive folder, use `find` to
+locate the folder's file-input element (query something like "file upload input element") —
+**do not click the "File upload" menu item directly**, since that opens a native OS file picker
+Claude cannot see or interact with — then call the `file_upload` tool with that element's `ref`
+and the local file paths (any file under a folder the user has connected, e.g. `bids/<slug>/
+outputs/*.docx`, qualifies; combined size per call must stay under 10MB, which every real bid
+document comfortably does). This uploads the actual file bytes directly via the browser with no
+base64 relay, no token cost, and no corruption risk — confirmed reliable on a batch of 7 real
+docx files in one call. This is the preferred method whenever Chrome is connected.
+
+If Chrome isn't connected, ask the user to drag the local file into Drive themselves (fastest,
+zero setup) rather than falling back to manual base64 relay.
+
+Note: files uploaded this way land as native `.docx` in Drive, not auto-converted to Google
+Docs — that's fine and preferred, since Drive natively previews/comments on docx without needing
+a conversion step, and it guarantees the letterhead/formatting survives exactly as built. Don't
+force a "convert to Google Docs" step afterward unless the user specifically wants an editable
+native Google Doc.
 
 ---
 
@@ -341,18 +354,14 @@ not analysis/notes files.
    `.rfp-kit/bids/<slug>/jira-epic.json`; only create a new one if none exists yet.
 1. **Always build the real letterhead-based `.docx` locally first** (via `docx_builder`,
    per above) and get it right — tables, headings, signature block, the works.
-2. **Only then upload that actual `.docx` file to Drive** (base64-encode it and call the
-   Drive `create_file` tool with the Word `contentMimeType`, letting Drive convert it to a
-   native Google Doc). **Never hand-type the document's content a second time as Markdown
-   directly into Drive's `create_file`** — a from-scratch Markdown-to-Google-Doc conversion
-   loses the letterhead, table formatting, and layout the real docx has. If a document was
-   ever created this way before this rule existed, rebuild it from the real docx and treat
-   the Markdown version as superseded.
-   - In practice, manually relaying a full docx's base64 bytes through the conversation is
-     unreliable at real file sizes (see the "Transporting a local file's bytes to Drive" note
-     above) — if it fails, don't keep retrying blindly; tell the user and offer the manual
-     drag-and-drop or Claude-in-Chrome alternative instead.
-3. Link the resulting Google Doc URL into that document's row on the bid's submission
+2. **Only then upload that actual `.docx` file to Drive** — via the Claude-in-Chrome file-input
+   upload if connected (preferred; see "Transporting a local file's bytes to Drive" below), or
+   the Drive `create_file` tool with the Word `contentMimeType` if not. **Never hand-type the
+   document's content a second time as Markdown directly into Drive's `create_file`** — a
+   from-scratch Markdown-to-Google-Doc conversion loses the letterhead, table formatting, and
+   layout the real docx has. If a document was ever created this way before this rule existed,
+   rebuild it from the real docx and treat the Markdown version as superseded.
+3. Link the resulting Drive file URL into that document's row on the bid's submission
    checklist ticket (not onto the epic — the epic only holds the folder link).
 
 **No delete tool exists for this Drive connector.** There is no delete/trash/rename/update-
