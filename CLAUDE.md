@@ -196,6 +196,36 @@ in progress / not started) and, once created, its individual Drive/Google Doc hy
 is the one place per-document links belong. Update this same ticket in place as documents are
 drafted rather than creating a new ticket per document.
 
+**Ticket titles are task names, not status reports.** A ticket's summary/title names the task
+itself — the document being drafted or collated — and nothing else. Status, context, dates,
+counts, and outcomes never belong in the title; they belong in the description. For a document
+ticket, the title is just the document name (e.g. "NDA", "Company Details", "Technical
+Proposal", "Eligibility Evidence Collation") — not "NDA drafted (pending signature)" or
+"Company Details document" or "Risk review (4 high, 6 medium)". Put all of that context —
+current status as the first line of the description, the working detail below it, and the
+actual document/folder link as a real hyperlink (smart-link preview, not plain text; see the
+hyperlink rule below) — into the description instead. This keeps ticket lists scannable and
+keeps the title stable even as status changes, so you're editing the description in place
+rather than renaming the ticket every time progress is made.
+
+**Document tickets vs. analysis tickets — treat them differently.** A document ticket (NDA,
+Company Details, Technical Proposal, Implementation Plan, Financial Statement, Client
+References, Team Structure, an evidence-collation ticket, etc.) is a discrete unit of work to
+execute — draft or collate one specific submission document — and should carry a `submission-doc`
+label, a real Status field that moves through the workflow (To Do → In Progress → Done) as the
+work actually progresses, and a description built from: current status, what the task involves,
+open items, and the real hyperlinked output.
+
+An analysis ticket (Go/No-Go, One-Page Synopsis, Risk & Red-Flag Review, Contradictions &
+Vague Requirements, and similar) is different in kind — it's a one-time write-up produced for
+reference/decision-making, not a task to execute with ongoing progress. Give these a clean,
+short title with no bid-name prefix (e.g. "Go/No-Go Analysis", "Risk & Red-Flag Review"), an
+`analysis` label so they're visually distinguishable from real work-items on the board, the
+full write-up in the description (never a link out to a separate Drive doc — see the rule
+above), and transition them straight to Done on creation, since there's no further action
+pending unless the underlying RFP changes (an addendum/corrigendum triggers a redo — see rule
+12 above — at which point transition back to In Progress while it's reworked, then Done again).
+
 **Turning analysis into tickets.** When asked to create tickets from Go/No-Go, synopsis, risks,
 contradictions, or checklist content, club related pointers into one ticket per topic/section
 rather than one ticket per bullet — e.g. one ticket for "Risks," clubbing all high/medium/low
@@ -215,12 +245,28 @@ a file was "attached" — say it was "added to the ticket" instead, since that's
 happened. For actual submission documents, the equivalent is a hyperlink (per the checklist
 ticket rule above), not the full document text.
 
+**Making links real (smart-link previews, not plain text).** When a Jira description needs to
+show a document/folder link, don't write markdown `[text](url)` — Jira renders that as plain
+clickable text with no preview. Instead call `createJiraIssue`/`editJiraIssue` with
+`contentFormat: "adf"` and put the URL in its own `blockCard` node:
+`{"type": "blockCard", "attrs": {"url": "<link>"}}` as a top-level item in the ADF `content`
+array (not nested inside a paragraph). This renders as Jira's real smart-link card — icon,
+fetched title, preview — matching what the user sees when pasting a link directly into the
+Jira UI. Caveat: `getJiraIssue`/`searchJiraIssuesUsingJql` normalize the read-back to plain
+markdown regardless of how the link was actually stored, so the API response can't confirm
+whether the blockCard rendered correctly — if it matters, ask the user to eyeball the live
+ticket in the browser rather than trusting the read-back.
+
 **Transporting a local file's bytes to Drive.** `create_file`'s `base64Content` parameter has to
-be authored by Claude directly in the tool call — there is no path-based upload for MCP tools,
-and relaying tens of thousands of base64 characters through the conversation by hand is fragile
-(a single dropped or altered character anywhere breaks the whole file) and gets worse the larger
-the file is. Before attempting this on a real letterhead-based docx (which embeds images and
-is rarely small), sanity-check the approach on a throwaway few-KB file first. If manual relay
+be authored by Claude directly in the tool call — there is no path-based upload for MCP tools.
+This isn't just fragile (a single dropped/altered character anywhere breaks the whole file) —
+it's also expensive: base64-encoding a typical few-dozen-KB letterheaded docx produces
+50-70K+ characters, and reading that back through any tool (bash, Read) to relay it into the
+`create_file` call costs tens of thousands of tokens per file, before you've even sent it.
+For a batch of several documents this is both unreliable and impractically expensive — don't
+attempt it as a first choice. Before attempting this on a real letterhead-based docx (which
+embeds images and is rarely small) at all, sanity-check the approach on a throwaway few-KB file
+first. If manual relay
 isn't reliably possible in a given session, say so plainly, and either ask the user to drag the
 local file into Drive themselves (fastest), or try the Claude-in-Chrome upload path (navigate to
 the Drive folder, use its native file-input upload) instead of forcing the base64 path.
@@ -308,6 +354,19 @@ not analysis/notes files.
      drag-and-drop or Claude-in-Chrome alternative instead.
 3. Link the resulting Google Doc URL into that document's row on the bid's submission
    checklist ticket (not onto the epic — the epic only holds the folder link).
+
+**No delete tool exists for this Drive connector.** There is no delete/trash/rename/update-
+content API available — only `create_file`, `copy_file`, `search_files`, `get_file_metadata`,
+`read_file_content`, `download_file_content`. This means:
+- **Never create a file speculatively "to check" or as a draft you intend to replace** — you
+  cannot clean up the leftover afterward. Get the content right before calling `create_file`.
+- **Before creating any new file in a bid's Drive folder, run `search_files` with
+  `parentId = '<folder>'` first** to confirm one with that title doesn't already exist. Silent
+  duplicates (the same analysis or document created twice across sessions) can only be cleaned
+  up by asking the user to trash the extra copy by hand — avoid causing them in the first place.
+- If a duplicate or a since-forbidden file (e.g. an analysis doc that predates the "analysis
+  docs don't get mirrored to Drive" rule) is ever found, don't try to work around the missing
+  delete tool — tell the user exactly which file(s) to trash and why, in one clear list.
 
 ### Parallelising document drafting (see also "PARALLELISING WORK" below)
 
