@@ -23,9 +23,97 @@ An open-source RFP response assistant that runs entirely inside Claude. Drop in 
 | Technical proposal | Full draft using your capabilities and past projects |
 | Commercial proposal | Pricing narrative and commercial terms |
 | Assemble submission | Every required document collected, renamed, and manifested into one folder |
+| Jira ticket | Any request, task, or piece of analysis turned into a tracked ticket |
 
-Multiple RFPs can run in parallel — each lives in its own folder, and addenda/corrigenda
-issued after the original RFP are reconciled against it rather than silently overwriting it.
+The moment an RFP (or a corrigendum/addendum) is parsed, Go/No-Go, the synopsis, the risk
+review, the contradiction check, and the submission checklist all run automatically — you
+don't have to ask for any of them. Multiple RFPs run in parallel, each in its own folder,
+and an addendum is always reconciled against the original extract (with superseded clauses
+called out) rather than silently overwriting it.
+
+---
+
+## In depth: how a bid actually moves through the kit
+
+**1. Parse.** Drop the RFP PDF in `bids/<slug>/source/` and say it's in. The PDF is read
+natively (no OCR step, no external converter) and turned into structured markdown — dates,
+scope, eligibility criteria, submission-document list, penalty clauses, all extracted, not
+summarised from memory.
+
+**2. Auto-analysis.** As soon as parsing finishes, four analyses and a checklist are written
+without being asked for: Go/No-Go (with a clear verdict and reasoning), a one-page synopsis,
+a risk & red-flag review (penalties, uncapped liability, aggressive SLAs, unusual indemnities),
+a contradiction check (places the RFP conflicts with itself or leaves something genuinely
+ambiguous), and a submission checklist that separates real submission documents from manual
+actions (stamp paper, notarisation, wet signatures, demand drafts) that can't be done digitally.
+
+**3. Draft.** Every submission document — NDA, company details, technical proposal,
+implementation plan, financials, client references, team structure, filled annexures — is
+built on your actual letterhead using your real company data (from `company-info.json`,
+`about/`, `experience/`, and whatever's in `company/`). Nothing is invented: a missing fact
+is flagged as `[MISSING — please provide: ...]` and asked for, one thing at a time, never
+guessed. Independent documents are drafted in parallel by sub-agents rather than one at a
+time, so a bid with eight required documents doesn't take eight times as long.
+
+**4. Assemble.** When you're ready to submit, every required enclosure is matched to a file
+already in `company/`, copied (never moved) and renamed sensibly, converted/merged into a
+single PDF where the RFP demands it, and written out with a manifest showing exactly what's
+included and what's still missing or needs a manual step.
+
+**5. Track (optional).** If you use Jira and/or Google Drive, the same bid can be tracked
+there too — see "Optional integrations" below.
+
+---
+
+## Optional integrations
+
+These are entirely opt-in — connect them once via Claude's connector settings, or skip this
+section entirely and use the kit purely through the two local folders.
+
+### Jira
+
+Turn any request, follow-up, or piece of analysis into a tracked ticket just by asking
+("make a ticket for this," "log this in Jira," or picking the ticket-creation option from
+the menu). The kit never hardcodes a board — the first time you ask, it asks which
+project to use and remembers your choice from then on.
+
+Structure per bid:
+- **One epic per bid**, holding the RFP synopsis and status. Its description links the
+  bid's single Drive folder (see below) — nothing else — so it stays a clean entry point
+  rather than a wall of links.
+- **One submission-checklist ticket**, listing every required submission document with
+  its status (not started / drafted / done) and its individual document link. This is
+  updated in place as documents progress, not recreated per document.
+  Individual per-document tickets can exist too, each carrying its own link — the
+  checklist ticket is the one place you can see all of them at a glance.
+- **Analysis tickets for Go/No-Go, the synopsis, risks, and contradictions** — the actual
+  write-up lives directly in the ticket description or a comment. These are working notes,
+  not submission deliverables, so they're never turned into a separate created document.
+
+### Google Drive
+
+If connected, actual submission documents (not analysis/notes) can be mirrored to Drive as
+native Google Docs, so non-technical stakeholders can view or comment without needing the
+local files. The real letterhead-based `.docx` is always built first and only then uploaded
+to Drive for conversion — content is never hand-typed a second time as Markdown, since that
+would lose the letterhead, tables, and layout the real document has. All of a bid's documents
+live in one Drive folder, matching the folder linked from its Jira epic.
+
+---
+
+## Under the hood, worth knowing
+
+- **Sub-agents for independent work.** Drafting a full set of submission documents, running
+  several analyses on the same RFP, or advancing two unrelated bids at once — genuinely
+  independent work is parallelised rather than worked through one item at a time.
+- **File locks are surfaced, never silently worked around.** If your letterhead is open in
+  another app (or, less obviously, still syncing down from iCloud/OneDrive/Drive as a
+  cloud-only placeholder), you're told exactly which file is stuck rather than getting a
+  degraded plain-text substitute with no explanation.
+- **A single `company-info.json` as the source of truth**, backed up automatically before
+  every update, so a bad extraction can always be undone.
+- **Manual-only steps are always flagged**, never silently skipped or faked — stamp paper,
+  wet signatures, notarisation, demand drafts, performance guarantees.
 
 ---
 
@@ -100,11 +188,15 @@ straight answer out.
   have, copies and renames it, converts/merges to PDF where the RFP requires it,
   and generates a manifest of what's included vs. still missing
 
-**Under the hood**
-- A single `company-info.json` as the source of truth, backed up automatically
-  before every update
-- Everything you don't need to see (parsed RFP text, analysis, checklists) lives
-  in a hidden working folder — your view stays to two folders
+**Track & collaborate (optional)**
+- Turn any request or piece of analysis into a Jira ticket, nested under one
+  epic per bid with a dedicated submission-documents checklist ticket
+- Mirror actual submission documents to Google Drive as native Google Docs,
+  built from the real letterheaded file rather than retyped from scratch
+- See [Optional integrations](#optional-integrations) below for the full picture
+
+Everything you don't need to see (parsed RFP text, analysis, checklists) lives
+in a hidden working folder — your view stays to two folders.
 
 ---
 
