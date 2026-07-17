@@ -141,20 +141,27 @@ def build_docx(body_xml: str, output_path: str, letterhead=None, sign_image=None
     """Clone the letterhead, inject body_xml before <w:sectPr>, embed the
     signature image under a relationship ID that's free in this specific
     letterhead, and write the finished .docx to output_path."""
+    import tempfile
+
     letterhead = str(letterhead or paths.letterhead())
     sign_image = str(sign_image or paths.sign_stamp())
     output_path = str(output_path)
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    shutil.copy(letterhead, output_path)
 
-    temp_dir = output_path + ".build"
-    if os.path.exists(temp_dir):
-        shutil.rmtree(temp_dir)
-    os.makedirs(temp_dir)
+    # Build in a local system temp dir rather than alongside output_path —
+    # some synced/cloud-backed mounts (iCloud Drive, OneDrive, etc.) briefly
+    # lock newly-extracted files and refuse unlink/rmtree on them, which
+    # breaks cleanup if we build in-place inside a synced folder.
+    temp_dir = tempfile.mkdtemp(prefix="hyperfill_docx_build_")
+    staged_docx = os.path.join(temp_dir, "_staged.docx")
+    shutil.copy(letterhead, staged_docx)
 
-    with zipfile.ZipFile(output_path, "r") as zf:
-        zf.extractall(temp_dir)
+    extract_dir = os.path.join(temp_dir, "extracted")
+    os.makedirs(extract_dir)
+    with zipfile.ZipFile(staged_docx, "r") as zf:
+        zf.extractall(extract_dir)
+    temp_dir = extract_dir  # rest of the function uses temp_dir as the extraction root
 
     # Only touch media/relationships if the body actually uses sign_block() —
     # documents without a signature shouldn't gain an unused image + relationship.

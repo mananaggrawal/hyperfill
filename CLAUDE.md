@@ -160,6 +160,71 @@ conversation (what was asked, any relevant context/links), create the issue in t
 project, and confirm back to the user in plain English with the ticket key/link — no raw
 JSON or API details.
 
+**Bid epics.** If a bid already has a Jira epic (check `.rfp-kit/bids/<slug>/jira-epic.json` —
+hidden, internal, never mention the filename), create new tickets as children of that epic
+(use the `parent` field with the epic's key) rather than as standalone issues. If a bid has no
+epic yet and the user asks to create tickets for it, ask once whether to create an epic first,
+then save its key to `.rfp-kit/bids/<slug>/jira-epic.json` (`{"epicKey": "...", "epicSummary":
+"...", "issueTypeName": "...", "projectKey": "..."}`) so future tickets for that bid nest under
+it automatically without asking again. Note some Jira schemas use a top-level issue type named
+something other than "Epic" (e.g. "Workstream") — check `getJiraProjectIssueTypesMetadata` for
+the project's actual top-level (hierarchyLevel 1) type name rather than assuming "Epic".
+
+**Epic ↔ Drive folder — structural rule.** Every bid epic must carry, in its own description,
+a link to that bid's single Drive folder (create one under the "SIB"-style naming convention if
+none exists, save its ID alongside the epic key in `.rfp-kit/bids/<slug>/jira-epic.json` as
+`"driveFolderId"`) — this is where every document created or collated for the bid lives. The
+epic's description should link the *folder*, not individual documents — individual document
+links belong on the individual/child tickets that reference them (e.g. the submission checklist
+ticket below), never duplicated up onto the epic itself.
+
+**Only submission documents get created as files.** Documents that are actually part of the
+buyer's required submission (per the RFP's own submission-documents list — NDA, company
+details, technical proposal, implementation plan, pricing, financials, references, team
+structure, filled annexures/forms, etc.) are the only things that get built as real files
+(docx via the toolkit, mirrored to Drive as Google Docs per the workflow below). Analysis and
+working notes — Go/No-Go, synopsis, risk review, contradictions, checklist commentary — are
+Claude's internal working output for the user's decision-making, not submission deliverables.
+They stay as markdown files under `.rfp-kit/bids/<slug>/analysis/` and, when the user wants them
+in Jira, go directly into a ticket's description/comment text — never as a separately created
+Drive document. If analysis docs were ever created as standalone Drive files before this rule
+existed, don't keep creating more of them; fold any further updates into ticket text instead.
+
+**Submission checklist ticket.** Each bid's epic should have one dedicated child ticket — the
+submission checklist — listing every required submission document with its status (done /
+in progress / not started) and, once created, its individual Drive/Google Doc hyperlink. This
+is the one place per-document links belong. Update this same ticket in place as documents are
+drafted rather than creating a new ticket per document.
+
+**Turning analysis into tickets.** When asked to create tickets from Go/No-Go, synopsis, risks,
+contradictions, or checklist content, club related pointers into one ticket per topic/section
+rather than one ticket per bullet — e.g. one ticket for "Risks," clubbing all high/medium/low
+findings in its description, not 11 separate tickets. Use the same title and clubbing pattern
+for future asks unless the user says otherwise. Per the rule above, this ticket's description
+holds the actual analysis text — it is not a place to link out to a separate analysis document.
+
+**Pushing documents to Jira.** When the user asks for documents/analysis to be "pushed to the
+board," "attached," or "added to Jira" automatically: this connector has no file-attachment
+API, so the actual mechanism is to put the full content of the relevant file into the ticket's
+description (via `createJiraIssue`) or as a comment on an existing ticket (via
+`addCommentToJiraIssue`) — not a literal file attachment. Do this automatically any time you
+generate or update an analysis file (go-no-go, synopsis, risks, contradictions, checklist) for
+a bid that has a saved Jira epic — create or update the matching ticket with the full content
+at the same time you write the file, without waiting for the user to ask each time. Never claim
+a file was "attached" — say it was "added to the ticket" instead, since that's what actually
+happened. For actual submission documents, the equivalent is a hyperlink (per the checklist
+ticket rule above), not the full document text.
+
+**Transporting a local file's bytes to Drive.** `create_file`'s `base64Content` parameter has to
+be authored by Claude directly in the tool call — there is no path-based upload for MCP tools,
+and relaying tens of thousands of base64 characters through the conversation by hand is fragile
+(a single dropped or altered character anywhere breaks the whole file) and gets worse the larger
+the file is. Before attempting this on a real letterhead-based docx (which embeds images and
+is rarely small), sanity-check the approach on a throwaway few-KB file first. If manual relay
+isn't reliably possible in a given session, say so plainly, and either ask the user to drag the
+local file into Drive themselves (fastest), or try the Claude-in-Chrome upload path (navigate to
+the Drive folder, use its native file-input upload) instead of forcing the base64 path.
+
 ---
 
 ## How to read company data
@@ -210,6 +275,52 @@ RFP supplies as a spreadsheet):
 - If there's no template, use `xlsx_builder.build_workbook()`.
 - Save output to `bids/<slug>/outputs/`, same as Word documents.
 
+**If the letterhead file is locked (a real OS-level file lock, not a permissions issue —
+you'll see "Resource deadlock avoided" or similar on every read attempt):** don't silently
+substitute a plain-text header and call it done. Tell the user the specific file is locked
+(likely open elsewhere) and ask them to close it. Only fall back to a plain-text-header
+version if the user explicitly says to proceed anyway, and say clearly that it's a
+placeholder pending the real letterhead.
+
+### Mirroring documents to Google Drive (if connected)
+
+If the user has connected Google Drive and wants documents mirrored there (e.g. to link
+from Jira tickets, or so non-technical stakeholders can view/comment), this applies to
+**submission documents only** (see the Jira integration section's structural rule above) —
+not analysis/notes files.
+
+0. **One Drive folder per bid, matching the epic.** All submission documents for a bid live
+   in a single Drive folder; that folder's link is what goes on the bid's Jira epic (see
+   above). Reuse the existing folder for the bid if one's already saved in
+   `.rfp-kit/bids/<slug>/jira-epic.json`; only create a new one if none exists yet.
+1. **Always build the real letterhead-based `.docx` locally first** (via `docx_builder`,
+   per above) and get it right — tables, headings, signature block, the works.
+2. **Only then upload that actual `.docx` file to Drive** (base64-encode it and call the
+   Drive `create_file` tool with the Word `contentMimeType`, letting Drive convert it to a
+   native Google Doc). **Never hand-type the document's content a second time as Markdown
+   directly into Drive's `create_file`** — a from-scratch Markdown-to-Google-Doc conversion
+   loses the letterhead, table formatting, and layout the real docx has. If a document was
+   ever created this way before this rule existed, rebuild it from the real docx and treat
+   the Markdown version as superseded.
+   - In practice, manually relaying a full docx's base64 bytes through the conversation is
+     unreliable at real file sizes (see the "Transporting a local file's bytes to Drive" note
+     above) — if it fails, don't keep retrying blindly; tell the user and offer the manual
+     drag-and-drop or Claude-in-Chrome alternative instead.
+3. Link the resulting Google Doc URL into that document's row on the bid's submission
+   checklist ticket (not onto the epic — the epic only holds the folder link).
+
+### Parallelising document drafting (see also "PARALLELISING WORK" below)
+
+Producing a bid's full set of submission documents (NDA, company details, technical
+proposal, implementation plan, team structure, client references, etc.) is exactly the
+kind of genuinely-independent, multi-document work that belongs on sub-agents — don't draft
+them one at a time yourself. Spin up one sub-agent per document (or grouped sensibly, e.g.
+2 lighter documents per agent) in a single message so they run concurrently. Each sub-agent
+prompt must be self-contained: repo root path, the toolkit-loading snippet above, the exact
+content/structure to build, and the output path — since a sub-agent has no memory of this
+conversation. After they return, spot-check the files yourself before uploading to Drive or
+linking from Jira.
+
 ---
 
 ## What to say when something is missing
@@ -254,6 +365,12 @@ anything you'd normally attach to a bid.
 
 Tell me when you're done and I'll take it from there.
 ```
+
+**Also offer Google Drive/Docs during this same first-time setup** (not required to proceed,
+but ask once so it isn't missed): suggest connecting Google Drive via the connector registry
+so documents/analyses can optionally be created as Google Docs/Sheets and linked from Jira
+tickets later. If the user declines or ignores it, don't ask again automatically — treat it as
+answered for this company profile.
 
 **When user says done:** scan `company/` and read every file. Extract silently:
 - Company name, GST, CIN from certificates or financials
