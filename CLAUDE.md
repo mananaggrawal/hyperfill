@@ -170,51 +170,110 @@ it automatically without asking again. Note some Jira schemas use a top-level is
 something other than "Epic" (e.g. "Workstream") — check `getJiraProjectIssueTypesMetadata` for
 the project's actual top-level (hierarchyLevel 1) type name rather than assuming "Epic".
 
-**Epic ↔ Drive folder — structural rule.** Every bid epic must carry, in its own description,
-a link to that bid's single Drive folder (create one under the "SIB"-style naming convention if
-none exists, save its ID alongside the epic key in `.rfp-kit/bids/<slug>/jira-epic.json` as
-`"driveFolderId"`) — this is where every document created or collated for the bid lives. The
-epic's description should link the *folder*, not individual documents — individual document
-links belong on the individual/child tickets that reference them (e.g. the submission checklist
-ticket below), never duplicated up onto the epic itself.
+**Epic structure — 4 sections, one ticket per document.** Every bid epic organises its child
+tickets into exactly four sections, and every document (analysis or submission) gets its own
+single ticket — never club multiple documents into one ticket:
+
+1. **Analysis Documents** — Go/No-Go, One-Page Synopsis, Risk & Red-Flag Review, Contradictions
+   & Vague Requirements. One ticket each, `analysis` label, ticket-text-only (see below).
+2. **Documents to Create** — submission documents Vegapay drafts from scratch (NDA, Company
+   Details, Technical Proposal, Implementation Plan, Team Structure, Pricing & Commercials, and
+   equivalents for future bids). One ticket each, `submission-doc` + `doc-create` labels.
+3. **Documents to Collate** — submission documents that are gathered/compiled from existing
+   company material rather than freshly authored (Financial Statement, Client References,
+   Eligibility Evidence, and equivalents). One ticket each, `submission-doc` + `doc-collate`
+   labels.
+4. **Blueprint** — exactly one ticket (`blueprint` label) that holds/links the bid's master
+   checklist — see "Blueprint Google Sheet" below. This is the single source of truth for every
+   actionable across the whole bid, not just the documents.
+
+The epic's own description lists all four sections as headers, with each child ticket linked
+underneath its section (issue key + one-line title) — this is how "sections" are represented
+in Jira, since Jira epics have no native sub-grouping. The epic description also carries
+blockCard links to the two Drive folders (Documents to Create / Documents to Collate — Analysis
+has no Drive folder, see below) and to the Blueprint Google Sheet, but never links to individual
+documents directly — those links live on the individual document tickets and in the Blueprint
+sheet.
+
+**Drive folder structure mirrors the epic — 2 folders, not 3.** Since Analysis Documents stay
+ticket-text-only (no Drive file — see below), only two Drive subfolders exist under the bid's
+folder: **"Documents to Create"** and **"Documents to Collate"**. Every file for a bid lives in
+the folder matching its ticket section — never loose in the bid's root Drive folder.
+
+**Naming convention — must be consistent across every document.** Every submission-document
+file (Create or Collate) is named `SIB_<Document_Name>.docx` — Title_Case, underscore-separated,
+no extra qualifiers like `_Draft`, `_Note`, `_narrative`, or lowercase words tacked on. Example:
+`SIB_NDA.docx`, not `SIB_NDA_Draft.docx`; `SIB_Client_References.docx`, not
+`SIB_Client_References_narrative.docx`. Check this every time a file is created or renamed —
+naming drift across a bid's documents is a real user-visible problem (it was flagged and fixed
+once already), so treat consistency as a hard requirement, not a nicety.
 
 **Only submission documents get created as files.** Documents that are actually part of the
 buyer's required submission (per the RFP's own submission-documents list — NDA, company
 details, technical proposal, implementation plan, pricing, financials, references, team
 structure, filled annexures/forms, etc.) are the only things that get built as real files
-(docx via the toolkit, mirrored to Drive as Google Docs per the workflow below). Analysis and
-working notes — Go/No-Go, synopsis, risk review, contradictions, checklist commentary — are
+(docx via the toolkit, mirrored to Drive per the workflow below, into the correct Create/Collate
+folder). Analysis and working notes — Go/No-Go, synopsis, risk review, contradictions — are
 Claude's internal working output for the user's decision-making, not submission deliverables.
-They stay as markdown files under `.rfp-kit/bids/<slug>/analysis/` and, when the user wants them
-in Jira, go directly into a ticket's description/comment text — never as a separately created
-Drive document. If analysis docs were ever created as standalone Drive files before this rule
-existed, don't keep creating more of them; fold any further updates into ticket text instead.
+They stay as markdown files under `.rfp-kit/bids/<slug>/analysis/` and live in Jira as the full
+write-up in the ticket description/comment text — never as a separately created Drive document.
+If analysis docs were ever created as standalone Drive files before this rule existed, don't
+keep creating more of them; fold any further updates into ticket text instead.
 
-**Submission checklist ticket.** Each bid's epic should have one dedicated child ticket — the
-submission checklist — listing every required submission document with its status (done /
-in progress / not started) and, once created, its individual Drive/Google Doc hyperlink. This
-is the one place per-document links belong. Update this same ticket in place as documents are
-drafted rather than creating a new ticket per document.
+**Blueprint Google Sheet — the master bid tracker.** Every bid has exactly one Blueprint Google
+Sheet (not a local xlsx — a native Google Sheet, tabular), linked from the Blueprint ticket and
+from the epic. It is the full bid tracker, with (at minimum) these tabs: **Documents** (one row
+per ticket — section, document name, status, Jira ticket link, Drive doc link, last-updated
+date, notes), **Eligibility Criteria** (one row per RFP eligibility requirement, evidence,
+status), **Partner Evaluation Framework / scoring workbook progress** (one row per tab/section
+of any buyer-supplied evaluation spreadsheet, with rows-completed vs. total), and **Manual
+Actions** (every item needing the user's own sign-off, signature, or decision). **Every update
+anywhere in the bid — a document drafted, a ticket status changed, an analysis redone, a manual
+action resolved — must be reflected in the Blueprint sheet at the same time.** Treat the sheet
+as the single place the user looks to understand where the bid stands; if it drifts out of sync
+with the actual tickets/documents it has failed its purpose.
+
+To build a multi-tab Google Sheet: build the workbook locally (openpyxl/xlsx skill) with all
+tabs populated, upload the `.xlsx` to Drive via the Chrome file-input method below, then convert
+it to a native Google Sheet via Drive's own "Open with → Google Sheets" action (right-click the
+uploaded file) — this preserves every tab. Link the *resulting Google Sheet* (not the original
+uploaded xlsx) from the Blueprint ticket and the epic, and flag the original uploaded `.xlsx`
+for deletion (see "No delete tool" below) once the converted Sheet is confirmed correct, so only
+one live copy of the tracker exists.
+
+**Cross-referencing — every ticket and document must reference the others.** Every document
+ticket (analysis, create, or collate) carries an issue-link ("relates to") to the Blueprint
+ticket, and the Blueprint ticket links back to every document ticket — this is a deliberate
+two-way mesh, not a one-way pointer. Every Create/Collate document ticket's description also
+carries a blockCard link to its actual Drive file. The Blueprint sheet's Documents tab links
+back to each Jira ticket. The epic links the two Drive folders and the Blueprint sheet. Nothing
+in this structure should be a dead end — from any ticket, sheet row, or Drive file, the user
+should be able to reach every other related piece.
+
+**No delete tool exists for Jira tickets either.** Same constraint as Drive (see below): there
+is no delete-issue tool available. When tickets need to be retired (e.g. a full restructure),
+rename their summary with a `DELETE THIS - ` prefix so the user can find and delete them from
+the Jira UI themselves — do not leave stale tickets unlabelled, and do not try to "hide" them
+via status/label changes alone, since the user needs to actually see which ones to remove.
 
 **Ticket titles are task names, not status reports.** A ticket's summary/title names the task
 itself — the document being drafted or collated — and nothing else. Status, context, dates,
 counts, and outcomes never belong in the title; they belong in the description. For a document
 ticket, the title is just the document name (e.g. "NDA", "Company Details", "Technical
-Proposal", "Eligibility Evidence Collation") — not "NDA drafted (pending signature)" or
-"Company Details document" or "Risk review (4 high, 6 medium)". Put all of that context —
-current status as the first line of the description, the working detail below it, and the
-actual document/folder link as a real hyperlink (smart-link preview, not plain text; see the
-hyperlink rule below) — into the description instead. This keeps ticket lists scannable and
-keeps the title stable even as status changes, so you're editing the description in place
-rather than renaming the ticket every time progress is made.
+Proposal", "Eligibility Evidence") — not "NDA drafted (pending signature)" or "Company Details
+document" or "Risk review (4 high, 6 medium)". Put all of that context — current status as the
+first line of the description, the working detail below it, and the actual document/folder link
+as a real hyperlink (smart-link preview, not plain text; see the hyperlink rule below) — into
+the description instead. This keeps ticket lists scannable and keeps the title stable even as
+status changes, so you're editing the description in place rather than renaming the ticket every
+time progress is made.
 
-**Document tickets vs. analysis tickets — treat them differently.** A document ticket (NDA,
-Company Details, Technical Proposal, Implementation Plan, Financial Statement, Client
-References, Team Structure, an evidence-collation ticket, etc.) is a discrete unit of work to
-execute — draft or collate one specific submission document — and should carry a `submission-doc`
-label, a real Status field that moves through the workflow (To Do → In Progress → Done) as the
-work actually progresses, and a description built from: current status, what the task involves,
-open items, and the real hyperlinked output.
+**Document tickets vs. analysis tickets — treat them differently.** A document ticket (Create or
+Collate section) is a discrete unit of work to execute — draft or collate one specific submission
+document — and should carry a `submission-doc` label (plus `doc-create` or `doc-collate`), a real
+Status field that moves through the workflow (To Do → In Progress → Done) as the work actually
+progresses, and a description built from: current status, what the task involves, open items,
+and the real hyperlinked output.
 
 An analysis ticket (Go/No-Go, One-Page Synopsis, Risk & Red-Flag Review, Contradictions &
 Vague Requirements, and similar) is different in kind — it's a one-time write-up produced for
@@ -225,13 +284,6 @@ full write-up in the description (never a link out to a separate Drive doc — s
 above), and transition them straight to Done on creation, since there's no further action
 pending unless the underlying RFP changes (an addendum/corrigendum triggers a redo — see rule
 12 above — at which point transition back to In Progress while it's reworked, then Done again).
-
-**Turning analysis into tickets.** When asked to create tickets from Go/No-Go, synopsis, risks,
-contradictions, or checklist content, club related pointers into one ticket per topic/section
-rather than one ticket per bullet — e.g. one ticket for "Risks," clubbing all high/medium/low
-findings in its description, not 11 separate tickets. Use the same title and clubbing pattern
-for future asks unless the user says otherwise. Per the rule above, this ticket's description
-holds the actual analysis text — it is not a place to link out to a separate analysis document.
 
 **Pushing documents to Jira.** When the user asks for documents/analysis to be "pushed to the
 board," "attached," or "added to Jira" automatically: this connector has no file-attachment
