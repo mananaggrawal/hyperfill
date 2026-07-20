@@ -20,7 +20,10 @@ hyperfill/
 │   ├── workflow.md            RFP → submission, step by step.
 │   ├── repo-structure.md      This file.
 │   ├── conventions.md         Naming, signing, formatting, manual-action rules.
-│   └── knowledge-base.md      What goes in company/ + .rfp-kit/ and how it's used.
+│   ├── knowledge-base.md      What goes in company/ + .rfp-kit/ and how it's used.
+│   └── business-proposal-structure.md
+│                                 Standalone commercial/technology proposal structure
+│                                 (not RFP submissions) — synced from Proposal Builder.
 │
 ├── .toolkit/                  Reusable, config-driven Python. See .toolkit/README.md.
 │   ├── paths.py               Repo-relative path resolver (finds your letterhead/signature).

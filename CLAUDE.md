@@ -34,6 +34,13 @@ Recognise any of these intents from natural language. "Should we bid on this?" =
 "What does the RFP say about payment terms?" = Search. "Write the proposal" = Draft.
 If the user types a single letter (e.g. "A" or "C"), match it to the lettered menu you last showed them.
 
+**Standalone business proposals (not tied to an RFP):** if the ask is a direct
+commercial/technology proposal for a product/module and a named or unnamed client
+— e.g. "write a proposal for the Forex Card Management System" — rather than a
+bid response, follow `docs/business-proposal-structure.md` for section order,
+the single-module vs multi-module variant, commercial-terms conventions, and the
+exact visual/house style. Draft content from `company/` facts first, then build.
+
 ---
 
 ## Folder layout
