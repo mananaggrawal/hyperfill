@@ -153,21 +153,26 @@ there is no requirement to convert it into a native Google Sheet. Linked from
 `.rfp-kit/bids/<slug>/blueprint.json` (hidden, internal — never mention the filename to the
 user). Columns: **Category, Item, Status, Link, Notes.**
 
-Category values (rows, not tabs) — **exactly four, kept deliberately few.** The user has twice
-pushed back on splitting the tracker into more pieces than necessary (first killing the 4-tab
-design, then folding Eligibility Criteria and the Partner Evaluation Framework straight into
+Category values (rows, not tabs) — **kept deliberately few.** The user has repeatedly pushed
+back on splitting the tracker into more pieces than necessary (first killing the 4-tab design,
+then folding Eligibility Criteria and the Partner Evaluation Framework straight into
 Create/Collate) — treat "fewest categories that don't lose information" as the standing rule,
-not just a one-off fix:
+not just a one-off fix. There are five:
 
-1. **Analysis** — one row each for Go/No-Go, One-Page Synopsis, Risk & Red-Flag Review,
+1. **Source** — the buyer's original documents exactly as issued (the RFP itself, any NDA
+   template, any buyer-supplied evaluation/scoring workbook). Upload these once, unmodified,
+   to a "Documents to Source" Drive folder, and never edit them again — any drafting, filling,
+   or verbatim-copy-with-blanks-filled work happens on a **copy** saved under Create, never on
+   the Source file itself. One row per original file. Link column carries the real Drive URL.
+2. **Analysis** — one row each for Go/No-Go, One-Page Synopsis, Risk & Red-Flag Review,
    Contradictions & Vague Requirements, **plus a consolidated Eligibility Assessment row**
    (one row summarising all of the RFP's eligibility requirements together — which are met,
    which map to which Create/Collate document, and which are a genuine open gap). Any
    insight or clarification that doesn't belong to one specific document belongs here, not in
-   a category of its own. Link column blank (no Drive file for these); the full write-up stays
-   in `.rfp-kit/bids/<slug>/analysis/*.md`, the row's Notes column is a short status summary,
-   not the full text.
-2. **Create** — submission documents Vegapay drafts from scratch (NDA, Company Details,
+   a category of its own. Link column blank on the main tab (no Drive file for these) — the
+   full write-up lives on a supplementary tab in the same Blueprint workbook (see "Supplementary
+   analysis tabs" below), and the Notes column names that tab plus a short bulleted summary.
+3. **Create** — submission documents Vegapay drafts from scratch (NDA, Company Details,
    Technical Proposal, Implementation Plan, Team Structure, Pricing & Commercials, and
    equivalents for future bids), **plus one row per tab/section of any buyer-supplied
    evaluation/scoring workbook** (e.g. a Partner Evaluation Framework) since filling that
@@ -192,13 +197,36 @@ not just a one-off fix:
    10MB Claude-in-Chrome `file_upload` cap), still give it its own row — Status "To Do" with a
    note asking the user to drag it in manually — rather than skipping it or bundling it into
    something else.
-4. **Manual Actions** — every item needing the user's own sign-off, signature, or decision (item,
+4. **Collate** — existing company files, copied as-is into Drive, nothing authored.
+5. **Manual Actions** — every item needing the user's own sign-off, signature, or decision (item,
    owner action needed, status, related document in Link).
 
-These four are just values in one column of one table — sort/filter by Category to view a
-slice, but never create a second tab or a separate section for any of them, and don't reach
-for a fifth category before checking whether the item actually belongs inside an existing
-Create/Collate row's Notes instead.
+These five are just values in one column of one table on the main "Blueprint" tab — sort/filter
+by Category to view a slice, but never create a second tab or a separate section on the main
+tab for any of them, and don't reach for a sixth category before checking whether the item
+actually belongs inside an existing Create/Collate row's Notes instead.
+
+**Supplementary analysis tabs — allowed, and different from the "no bifurcation" rule above.**
+The user has explicitly approved adding extra sheets/tabs *within the same Blueprint workbook*
+to hold the full analysis detail (Go-No-Go, Synopsis, Risks, Contradictions, Eligibility) in
+a proper tabular format — this is not the same thing as the "no bifurcation" rule, which is
+about not splitting the *Category* column's values (Source/Analysis/Create/Collate/Manual
+Actions) across separate tabs on the main tracker. The main "Blueprint" tab stays single/flat;
+the analysis tabs are supplementary detail pages, one per analysis type, each built as a real
+table (header row, borders, one row per point/risk/criterion — never a single column of bullet
+text). Comprehensiveness matters more than brevity here — carry over every point from the
+source `.rfp-kit/bids/<slug>/analysis/*.md` file, don't summarise it away. Column shapes that
+have worked well: Risks → Severity | Risk | Detail; Contradictions → # | Requirement/Clause |
+Contradiction/Ambiguity; Eligibility → # | Criterion | Status | Evidence; Go-No-Go and Synopsis
+→ Section/Topic | Detail.
+
+**Don't rely on in-workbook hyperlinks to jump between tabs.** An internal Excel hyperlink
+(`cell.hyperlink = "#'SheetName'!A1"`) does not render as a working tab-jump when the xlsx is
+opened via Google Sheets' preview of an uploaded file — clicking it pops up a broken
+file-preview card instead of navigating. Don't put these in the Link column. Instead, leave
+the Analysis rows' Link column blank and have the Notes column simply name the tab in plain
+text (e.g. "Full detail: open the 'Risks' tab in this workbook") — the tabs are visible at the
+bottom of the same file, so this is one click away either way.
 
 **Link column display text.** Use a word that cannot collide with a Status value — **"View"**,
 not "Open". Several Manual Actions rows legitimately have Status = "Open"; if the Link column's
