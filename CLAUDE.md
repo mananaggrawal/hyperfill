@@ -153,31 +153,47 @@ there is no requirement to convert it into a native Google Sheet. Linked from
 `.rfp-kit/bids/<slug>/blueprint.json` (hidden, internal — never mention the filename to the
 user). Columns: **Category, Item, Status, Link, Notes.**
 
-Category values (rows, not tabs):
+Category values (rows, not tabs) — **exactly four, kept deliberately few.** The user has twice
+pushed back on splitting the tracker into more pieces than necessary (first killing the 4-tab
+design, then folding Eligibility Criteria and the Partner Evaluation Framework straight into
+Create/Collate) — treat "fewest categories that don't lose information" as the standing rule,
+not just a one-off fix:
 
 1. **Analysis** — one row each for Go/No-Go, One-Page Synopsis, Risk & Red-Flag Review,
-   Contradictions & Vague Requirements. Link column blank (no Drive file for these — see
-   below); the full write-up stays in `.rfp-kit/bids/<slug>/analysis/*.md`, the row's Notes
-   column is a short status summary, not the full text.
+   Contradictions & Vague Requirements, **plus a consolidated Eligibility Assessment row**
+   (one row summarising all of the RFP's eligibility requirements together — which are met,
+   which map to which Create/Collate document, and which are a genuine open gap). Any
+   insight or clarification that doesn't belong to one specific document belongs here, not in
+   a category of its own. Link column blank (no Drive file for these); the full write-up stays
+   in `.rfp-kit/bids/<slug>/analysis/*.md`, the row's Notes column is a short status summary,
+   not the full text.
 2. **Create** — submission documents Vegapay drafts from scratch (NDA, Company Details,
    Technical Proposal, Implementation Plan, Team Structure, Pricing & Commercials, and
-   equivalents for future bids). Link column carries the real Drive URL once the file is
-   uploaded to the bid's "Documents to Create" folder. Status moves To Do → In Progress → Done
-   as work actually progresses.
+   equivalents for future bids), **plus one row per tab/section of any buyer-supplied
+   evaluation/scoring workbook** (e.g. a Partner Evaluation Framework) since filling that
+   workbook out is itself a document Vegapay creates — do not give it a separate category.
+   Rows-completed vs. total goes in Notes (e.g. "62/62 done" or "0/370"). Link column carries
+   the real Drive URL once the file is uploaded to the bid's "Documents to Create" folder.
+   Status moves To Do → In Progress → Done as work actually progresses.
 3. **Collate** — submission documents gathered/compiled from existing company material rather
    than freshly authored (Financial Statement, Client References, Eligibility Evidence, and
    equivalents). Link column carries the real Drive URL once uploaded to "Documents to Collate".
-4. **Eligibility Criteria** — one row per RFP eligibility requirement; Link column points to
-   whichever Create/Collate document or company evidence file satisfies it.
-5. **Partner Evaluation Framework** — one row per tab/section of any buyer-supplied scoring
-   workbook (rows-completed vs. total goes in Notes, e.g. "62/62 done" or "0/370"). Link column
-   points to the filled workbook once it exists. These rows must live in the same sheet as
-   everything else — never split into a separate section or tab.
-6. **Manual Actions** — every item needing the user's own sign-off, signature, or decision (item,
+   Where a Collate (or Create) document also serves as evidence for a specific RFP eligibility
+   requirement, say so directly in that row's Notes (e.g. "Also evidences Eligibility #4") —
+   don't create a separate Eligibility Criteria row/category to point at the same file.
+4. **Manual Actions** — every item needing the user's own sign-off, signature, or decision (item,
    owner action needed, status, related document in Link).
 
-All six categories are just values in one column of one table — sort/filter by Category to view
-a slice, but never create a second tab or a separate section for any of them.
+These four are just values in one column of one table — sort/filter by Category to view a
+slice, but never create a second tab or a separate section for any of them, and don't reach
+for a fifth category before checking whether the item actually belongs inside an existing
+Create/Collate row's Notes instead.
+
+**Link column display text.** Use a word that cannot collide with a Status value — **"View"**,
+not "Open". Several Manual Actions rows legitimately have Status = "Open"; if the Link column's
+clickable text is also the word "Open", the same word appears twice in one row for two
+unrelated meanings and reads as a mistake. Leave the Link cell blank (not a placeholder dash)
+when no document exists yet for that row.
 
 **Every update anywhere in the bid — a document drafted, a status changed, an analysis redone,
 a manual action resolved — must be reflected in the Blueprint sheet at the same time.** Treat
