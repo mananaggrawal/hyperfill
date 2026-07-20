@@ -138,8 +138,9 @@ issue, no board. If a user's request implies a ticketing system ("make a ticket 
 "log this in Jira"), explain plainly that this kit tracks everything in the bid's Blueprint
 Google Sheet instead, and offer to add it there.
 
-**One Blueprint Sheet per bid, exactly 4 tabs.** Every bid has exactly one native Google Sheet
-(not a local xlsx once finalised — see the build steps below), linked from `.rfp-kit/bids/<slug>/
+**One Blueprint Sheet per bid, exactly 4 tabs.** Every bid has exactly one Blueprint workbook —
+an `.xlsx` uploaded to the bid's Drive folder is perfectly fine as the final form; there is no
+requirement to convert it into a native Google Sheet. Linked from `.rfp-kit/bids/<slug>/
 blueprint.json` (hidden, internal — never mention the filename to the user). Its four tabs:
 
 1. **Analysis Documents** — one row each for Go/No-Go, One-Page Synopsis, Risk & Red-Flag
@@ -192,18 +193,15 @@ and **"Documents to Collate"**. Every file for a bid lives in the folder matchin
 section — never loose in the bid's root Drive folder.
 
 **Building the Blueprint Sheet.** Build the workbook locally (openpyxl/xlsx skill) with all
-four tabs populated, then upload it to Drive so it becomes a native Google Sheet. The most
-reliable method confirmed in this project: call the Drive `create_file` tool with the local
-`.xlsx` file's base64 content and `contentMimeType` set to the Excel MIME type
-(`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`) **without** setting
-`disableConversionToGoogleType` — Drive auto-converts supported content to its native Google
-type (`application/vnd.google-apps.spreadsheet`) on upload, preserving every tab. (If
-Claude-in-Chrome is connected and the file has embedded images, the Chrome file-input upload
-method below plus a manual "File > Save as Google Sheets" step is the fallback — but for a
-plain data workbook like the Blueprint, direct `create_file` with auto-conversion is simpler
-and confirmed to work.) If a bid already has a Blueprint Sheet and it needs restructuring,
-create the new version and treat the old file as superseded (see "No delete tool" below) rather
-than trying to edit the old Sheet's tabs in place from outside a spreadsheet-editing tool.
+four tabs populated, then upload the `.xlsx` as-is to the bid's Drive folder — via the
+Claude-in-Chrome file-input upload method (preferred whenever Chrome is connected — see
+"Transporting a local file's bytes to Drive" below) or the Drive `create_file` tool with
+`contentMimeType` set to the Excel MIME type and `disableConversionToGoogleType: true`. The
+uploaded `.xlsx` **is** the Blueprint — no conversion to a native Google Sheet is required or
+expected; don't run a "Save as Google Sheets" step for it. If a bid already has a Blueprint
+Sheet and it needs restructuring, create the new version and treat the old file as superseded
+(see "No delete tool" below) rather than trying to edit the old file's tabs in place from
+outside a spreadsheet-editing tool.
 
 **Cross-referencing — nothing should be a dead end.** Every Create/Collate document row in the
 Blueprint carries the document's real Drive link. The Blueprint & Checklist tab's overview table
@@ -237,16 +235,13 @@ If Chrome isn't connected, ask the user to drag the local file into Drive themse
 zero setup) rather than falling back to manual base64 relay.
 
 Note: files uploaded this way land as native `.docx`/`.xlsx` in Drive, not auto-converted to
-Google Docs/Sheets — that's fine and preferred for docx (Drive natively previews/comments on
-docx without a conversion step, and it guarantees the letterhead/formatting survives exactly as
-built). Don't force a "convert to Google Docs" step afterward unless the user specifically wants
-an editable native Google Doc. For the Blueprint xlsx specifically, conversion to a native Sheet
-**is** required — see the "Blueprint Google Sheet" section above for the exact steps, and note
-the `File > Save as Google Sheets` menu item (not `Open with > Google Sheets`, which only opens
-the xlsx in Sheets' Office-compatibility viewer and does **not** produce a native Sheet) creates
-a **new** file with a new ID in the same folder — the original xlsx is left behind afterward and
-must be flagged `DELETE THIS -` per the no-delete-tool rule below, and every ticket/epic link
-must point at the new Sheet's file ID, not the original xlsx's.
+Google Docs/Sheets — that's fine and preferred, both for docx (Drive natively previews/comments
+on docx without a conversion step, and it guarantees the letterhead/formatting survives exactly
+as built) and for the Blueprint xlsx (the user has confirmed a plain `.xlsx` in Drive is the
+desired final form). Don't force a "convert to Google Docs/Sheets" step afterward unless the
+user specifically asks for an editable native Google Doc or Sheet — running `File > Save as
+Google Sheets` unprompted just leaves a duplicate file behind with no delete tool to clean it
+up with, so skip it.
 
 Separately: restoring a file or folder from Drive's Bin (`https://drive.google.com/drive/trash`,
 row's ⋮ menu ➝ Restore) preserves the original file ID and returns it to its original parent
