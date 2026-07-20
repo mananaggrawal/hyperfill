@@ -175,12 +175,23 @@ not just a one-off fix:
    Rows-completed vs. total goes in Notes (e.g. "62/62 done" or "0/370"). Link column carries
    the real Drive URL once the file is uploaded to the bid's "Documents to Create" folder.
    Status moves To Do → In Progress → Done as work actually progresses.
-3. **Collate** — submission documents gathered/compiled from existing company material rather
-   than freshly authored (Financial Statement, Client References, Eligibility Evidence, and
-   equivalents). Link column carries the real Drive URL once uploaded to "Documents to Collate".
-   Where a Collate (or Create) document also serves as evidence for a specific RFP eligibility
-   requirement, say so directly in that row's Notes (e.g. "Also evidences Eligibility #4") —
-   don't create a separate Eligibility Criteria row/category to point at the same file.
+3. **Collate** — existing company files, copied as-is into Drive, nothing authored. **Never
+   create a new Word/summary/wrapper document for a Collate row** — no "Financial Statement"
+   or "Client References" or "Eligibility Evidence" docx that bundles or narrates several source
+   files together. If the RFP needs financial statements, copy the actual CA certificate and
+   audit-report PDFs that already exist in `company/`; if it needs client references, copy the
+   actual agreement/engagement PDFs. **One Collate row per individual existing file** — a bid
+   with 20 pieces of collated evidence gets 20 Collate rows, not one row per requirement
+   category. This was flagged directly by the user once already ("these are docs you created,
+   which were unsolicited... Collate should have existing docs simply copied and links pasted
+   in blueprint") — treat it as a hard rule, not a style preference. Link column carries the
+   real Drive URL once uploaded to "Documents to Collate". Where a Collate (or Create) document
+   also serves as evidence for a specific RFP eligibility requirement, say so directly in that
+   row's Notes (e.g. "Also evidences Eligibility #4") — don't create a separate Eligibility
+   Criteria row/category to point at the same file. If a file is too large to upload (over the
+   10MB Claude-in-Chrome `file_upload` cap), still give it its own row — Status "To Do" with a
+   note asking the user to drag it in manually — rather than skipping it or bundling it into
+   something else.
 4. **Manual Actions** — every item needing the user's own sign-off, signature, or decision (item,
    owner action needed, status, related document in Link).
 
