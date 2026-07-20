@@ -145,30 +145,39 @@ issue, no board. If a user's request implies a ticketing system ("make a ticket 
 "log this in Jira"), explain plainly that this kit tracks everything in the bid's Blueprint
 Google Sheet instead, and offer to add it there.
 
-**One Blueprint Sheet per bid, exactly 4 tabs.** Every bid has exactly one Blueprint workbook —
-an `.xlsx` uploaded to the bid's Drive folder is perfectly fine as the final form; there is no
-requirement to convert it into a native Google Sheet. Linked from `.rfp-kit/bids/<slug>/
-blueprint.json` (hidden, internal — never mention the filename to the user). Its four tabs:
+**One Blueprint tracker per bid — a single flat sheet, no tabs.** The user has explicitly said
+they do not want bifurcated tracking: everything lives as rows in **one sheet**, distinguished
+by a **Category** column rather than split across tabs. Every bid has exactly one Blueprint
+workbook — an `.xlsx` uploaded to the bid's Drive folder is perfectly fine as the final form;
+there is no requirement to convert it into a native Google Sheet. Linked from
+`.rfp-kit/bids/<slug>/blueprint.json` (hidden, internal — never mention the filename to the
+user). Columns: **Category, Item, Status, Link, Notes.**
 
-1. **Analysis Documents** — one row each for Go/No-Go, One-Page Synopsis, Risk & Red-Flag
-   Review, Contradictions & Vague Requirements. Columns: Document, Status, Notes. These are
-   internal working outputs for the user's decision-making, not submission deliverables — the
-   full write-up stays in `.rfp-kit/bids/<slug>/analysis/*.md`; the sheet row is a short status
-   + notes summary, not the full text.
-2. **Documents to Create** — submission documents Vegapay drafts from scratch (NDA, Company
-   Details, Technical Proposal, Implementation Plan, Team Structure, Pricing & Commercials, and
-   equivalents for future bids). Columns: Document, Status, Drive Link, Notes. One row per
-   document, status moves To Do → In Progress → Done as work actually progresses.
-3. **Documents to Collate** — submission documents gathered/compiled from existing company
-   material rather than freshly authored (Financial Statement, Client References, Eligibility
-   Evidence, and equivalents). Same columns as above.
-4. **Blueprint & Checklist** — the master overview: a combined table mirroring all rows from
-   the three tabs above (Section, Document, Status, Drive Link, Notes), plus three sub-sections
-   beneath it: **Eligibility Criteria** (one row per RFP eligibility requirement, evidence,
-   status), **Partner Evaluation Framework** (one row per tab/section of any buyer-supplied
-   scoring workbook, rows-completed vs. total), and **Manual Actions** (every item needing the
-   user's own sign-off, signature, or decision — item, owner action needed, status, related
-   document).
+Category values (rows, not tabs):
+
+1. **Analysis** — one row each for Go/No-Go, One-Page Synopsis, Risk & Red-Flag Review,
+   Contradictions & Vague Requirements. Link column blank (no Drive file for these — see
+   below); the full write-up stays in `.rfp-kit/bids/<slug>/analysis/*.md`, the row's Notes
+   column is a short status summary, not the full text.
+2. **Create** — submission documents Vegapay drafts from scratch (NDA, Company Details,
+   Technical Proposal, Implementation Plan, Team Structure, Pricing & Commercials, and
+   equivalents for future bids). Link column carries the real Drive URL once the file is
+   uploaded to the bid's "Documents to Create" folder. Status moves To Do → In Progress → Done
+   as work actually progresses.
+3. **Collate** — submission documents gathered/compiled from existing company material rather
+   than freshly authored (Financial Statement, Client References, Eligibility Evidence, and
+   equivalents). Link column carries the real Drive URL once uploaded to "Documents to Collate".
+4. **Eligibility Criteria** — one row per RFP eligibility requirement; Link column points to
+   whichever Create/Collate document or company evidence file satisfies it.
+5. **Partner Evaluation Framework** — one row per tab/section of any buyer-supplied scoring
+   workbook (rows-completed vs. total goes in Notes, e.g. "62/62 done" or "0/370"). Link column
+   points to the filled workbook once it exists. These rows must live in the same sheet as
+   everything else — never split into a separate section or tab.
+6. **Manual Actions** — every item needing the user's own sign-off, signature, or decision (item,
+   owner action needed, status, related document in Link).
+
+All six categories are just values in one column of one table — sort/filter by Category to view
+a slice, but never create a second tab or a separate section for any of them.
 
 **Every update anywhere in the bid — a document drafted, a status changed, an analysis redone,
 a manual action resolved — must be reflected in the Blueprint sheet at the same time.** Treat
@@ -192,29 +201,36 @@ structure, filled annexures/forms, etc.) are the only things that get built as r
 via the toolkit, mirrored to Drive per the workflow below, into the correct Create/Collate
 folder). Analysis and working notes — Go/No-Go, synopsis, risk review, contradictions — stay as
 markdown files under `.rfp-kit/bids/<slug>/analysis/` and get a short status/notes summary in
-the Blueprint's Analysis Documents tab — never a separately created Drive document.
+the Blueprint's Analysis rows — never a separately created Drive document.
 
-**Drive folder structure mirrors the Blueprint — 2 folders.** Since Analysis Documents have no
-Drive file, only two Drive subfolders exist under the bid's folder: **"Documents to Create"**
-and **"Documents to Collate"**. Every file for a bid lives in the folder matching its Blueprint
-section — never loose in the bid's root Drive folder.
+**Drive folder structure — 2 folders, independent of the tracker's flat layout.** Since Analysis
+rows have no Drive file, only two Drive subfolders exist under the bid's folder: **"Documents to
+Create"** and **"Documents to Collate"**. Every submission-document file for a bid lives in the
+folder matching its Blueprint Category — never loose in the bid's root Drive folder. (Creating
+these two folders via the Drive `create_file` tool with `mimeType: application/vnd.google-apps.folder`
+is more reliable than the Chrome "New > New folder" UI menu, which has been flaky — prefer the
+tool call.) Keeping 2 folders for file organization is separate from the tracker itself being a
+single flat sheet — the user only asked to de-bifurcate the tracker, not the Drive folders.
 
-**Building the Blueprint Sheet.** Build the workbook locally (openpyxl/xlsx skill) with all
-four tabs populated, then upload the `.xlsx` as-is to the bid's Drive folder — via the
+**Building the Blueprint Sheet.** Build the workbook locally (openpyxl/xlsx skill) as a single
+sheet with all Category rows populated, then upload the `.xlsx` as-is to the bid's Drive folder — via the
 Claude-in-Chrome file-input upload method (preferred whenever Chrome is connected — see
 "Transporting a local file's bytes to Drive" below) or the Drive `create_file` tool with
 `contentMimeType` set to the Excel MIME type and `disableConversionToGoogleType: true`. The
 uploaded `.xlsx` **is** the Blueprint — no conversion to a native Google Sheet is required or
-expected; don't run a "Save as Google Sheets" step for it. If a bid already has a Blueprint
-Sheet and it needs restructuring, create the new version and treat the old file as superseded
-(see "No delete tool" below) rather than trying to edit the old file's tabs in place from
-outside a spreadsheet-editing tool.
+expected; don't run a "Save as Google Sheets" step for it. If a bid already has a Blueprint file
+at the same path/name and it needs restructuring or a fresh rebuild, re-upload through the same
+Chrome file-input flow — Drive detects the name collision and offers an "Upload options" dialog
+with "Replace existing file" vs. "Keep both files"; choose **Replace existing file**. This keeps
+the same file ID and Drive link (so anything already pointing at it, e.g. blueprint.json or a
+previous share) keeps working, and avoids ever needing the "no delete tool" workaround for the
+Blueprint itself. Only fall back to trash-and-recreate (see "No delete tool" below) if the
+replace dialog doesn't appear for some reason.
 
-**Cross-referencing — nothing should be a dead end.** Every Create/Collate document row in the
-Blueprint carries the document's real Drive link. The Blueprint & Checklist tab's overview table
-mirrors every row from the other three tabs, so it's a true single-pane summary, not just a
-pointer. From any tab, the user should be able to find the status and the Drive link for every
-document in the bid.
+**Cross-referencing — nothing should be a dead end.** Every Create/Collate row in the Blueprint
+carries the document's real Drive link, and every Eligibility Criteria / Manual Actions row links
+back to whichever Create/Collate document satisfies it, where one exists. Because it's a single
+sheet, this is automatic — there's no second tab to keep in sync or fall out of sync with.
 
 **Transporting a local file's bytes to Drive — prefer Claude-in-Chrome, not base64.** The Drive
 MCP's `create_file` only accepts inline `base64Content` — there's no path-based upload. Relaying
@@ -333,8 +349,8 @@ above) — not analysis/notes files.
    from-scratch Markdown-to-Google-Doc conversion loses the letterhead, table formatting, and
    layout the real docx has. If a document was ever created this way before this rule existed,
    rebuild it from the real docx and treat the Markdown version as superseded.
-3. Link the resulting Drive file URL into that document's row on the bid's Blueprint sheet
-   (Documents to Create or Documents to Collate tab, plus the Blueprint & Checklist overview).
+3. Link the resulting Drive file URL into that document's row (Category = Create or Collate)
+   on the bid's single-sheet Blueprint tracker.
 
 **No delete tool exists for this Drive connector.** There is no delete/trash/rename/update-
 content API available — only `create_file`, `copy_file`, `search_files`, `get_file_metadata`,
